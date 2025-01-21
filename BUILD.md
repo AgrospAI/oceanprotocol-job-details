@@ -10,9 +10,9 @@ python -m build
 
 ## Upload to repository
 
-Upload the package to the `pypi` repository, or `testpypi` for testing purposes.
+Upload the package to the `pypi` repository (default when empty), or `testpypi` for testing purposes.
 
 ```Powershell
-python -m twine upload --repository pypi dist/*
+python -m twine upload dist/*
 python -m twine upload --repository testpypi dist/*
 ```
