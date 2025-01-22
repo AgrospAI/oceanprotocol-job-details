@@ -1,1 +1,1 @@
-A Python package to get details from OceanGate jobs
+A Python package to get details from OceanProtocol jobs
