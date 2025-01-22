@@ -29,5 +29,8 @@ class ServiceType(Enum):
 @dataclass(frozen=True, slots=True)
 class Paths:
     DATA: Path = Path("data")
-    DATA_INPUTS: Path = DATA / "inputs"
-    DATA_DDOS: Path = DATA / "ddos"
+    INPUTS: Path = DATA / "inputs"
+    DDOS: Path = DATA / "ddos"
+    OUTPUTS: Path = DATA / "outputs"
+    LOGS: Path = DATA / "logs"
+    

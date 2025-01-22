@@ -6,7 +6,7 @@ version = "0.0.1"
 authors = [
     { name = "Christian López García", email = "christian.lopez@udl.cat" },
 ]
-description = "A Python package to get details from OceanGate jobs"
+description = "A Python package to get details from OceanProtocol jobs"
 readme = "README.md"
 requires-python = ">=3.13"
 classifiers = [
@@ -16,12 +16,12 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/AgrospAI/oceangate-job-details"
-Issues = "https://github.com/AgrospAI/oceangate-job-details/issues"
+Homepage = "https://github.com/AgrospAI/oceanprotocol-job-details"
+Issues = "https://github.com/AgrospAI/oceanprotocol-job-details/issues"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-packages = [{ include = "oceangate_job_details" }]
+packages = [{ include = "oceanprotocol_job_details" }]

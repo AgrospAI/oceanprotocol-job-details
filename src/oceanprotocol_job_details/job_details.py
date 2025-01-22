@@ -33,7 +33,7 @@ class Algorithm:
 
         return cls(
             DID=did,
-            DDO=root / Paths.DATA_DDOS / did,
+            DDO=root / Paths.DDOS / did,
         )
 
 
@@ -81,7 +81,7 @@ class JobDetails:
                 ddo = load(file)
                 for service in ddo[DidKeys.SERVICE]:
                     if service[DidKeys.SERVICE_TYPE] == ServiceType.METADATA:
-                        base_path = root / Paths.DATA_INPUTS / did
+                        base_path = root / Paths.INPUTS / did
                         files[did] = [
                             base_path / str(idx)
                             for idx in range(
