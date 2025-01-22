@@ -3,16 +3,6 @@ from pathlib import Path
 
 
 @dataclass(frozen=True, slots=True)
-class _EnvironmentKeys:
-    """Environment keys passed to the algorithm"""
-
-    ROOT: str = "ROOT_FOLDER"
-    SECRET: str = "secret"
-    ALGORITHM: str = "TRANSFORMATION_DID"
-    DIDS: str = "DIDS"
-
-
-@dataclass(frozen=True, slots=True)
 class _DidKeys:
     """Common keys inside the DIDs"""
 
@@ -25,16 +15,24 @@ class _DidKeys:
 
 @dataclass(frozen=True, slots=True)
 class _ServiceType:
+    """Service types inside the DIDs"""
+
     METADATA: str = "metadata"
 
 
 @dataclass(frozen=True, slots=True)
 class _Paths:
+    """Common paths used in the Ocean Protocol directories"""
+
     DATA: Path = Path("data")
     INPUTS: Path = DATA / "inputs"
     DDOS: Path = DATA / "ddos"
     OUTPUTS: Path = DATA / "outputs"
     LOGS: Path = DATA / "logs"
 
-if __name__ == "__main__":
-    print(_ServiceType().METADATA)
+
+DidKeys = _DidKeys()
+ServiceType = _ServiceType()
+Paths = _Paths()
+
+del _DidKeys, _ServiceType, _Paths
