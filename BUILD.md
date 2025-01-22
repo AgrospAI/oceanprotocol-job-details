@@ -16,3 +16,11 @@ Upload the package to the `pypi` repository (default when empty), or `testpypi` 
 python -m twine upload dist/*
 python -m twine upload --repository testpypi dist/*
 ```
+
+## Run tests
+
+After developing a feature or fixing things, run the tests with
+
+```PowerShell
+poetry run pytest
+```
