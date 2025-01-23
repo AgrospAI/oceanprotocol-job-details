@@ -7,13 +7,13 @@ from json import load, loads
 from pathlib import Path
 from typing import Optional, final
 
-from src.oceanprotocol_job_details.dataclasses.constants import (
+from oceanprotocol_job_details.dataclasses.constants import (
     DidKeys,
     Paths,
     ServiceType,
 )
-from src.oceanprotocol_job_details.dataclasses.job_details import Algorithm, JobDetails
-from src.oceanprotocol_job_details.loaders.loader import Loader
+from oceanprotocol_job_details.dataclasses.job_details import Algorithm, JobDetails
+from oceanprotocol_job_details.loaders.loader import Loader
 
 
 @dataclass(frozen=True)
