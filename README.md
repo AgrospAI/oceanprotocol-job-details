@@ -19,13 +19,13 @@ from oceanprotocol_job_details.job_details import OceanProtocolJobDetails
 job_details = OceanProtocolJobDetails().load()
 ```
 
-### Advanced Usage
+### Advanced Usage (not recommended)
 
 If instead of the environment variables, we want to use another kind of mapping, can pass it as a parameter and it will work as long as it has the same key values (Can be implemented in a more generic way, but there is no need right now).
 
 ```Python
 from oceanprotocol_job_details.job_details import OceanProtocolJobDetails
-from oceanprotocol_job_details.constants
+from src.oceanprotocol_job_details.loaders.impl.environment import Keys
 
 # Fill in with values that will be used instead of env
 custom_mapper = {
