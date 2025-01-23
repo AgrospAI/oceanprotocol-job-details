@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any, Mapping, Optional, Sequence
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class Algorithm:
     did: str
     """The DID of the algorithm used to process the data"""
@@ -12,7 +12,7 @@ class Algorithm:
     """The DDO path of the algorithm used to process the data"""
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class JobDetails:
     """Details of the current job, such as the used inputs and algorithm"""
 
