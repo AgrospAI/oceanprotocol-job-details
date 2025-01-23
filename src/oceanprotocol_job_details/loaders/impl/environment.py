@@ -5,7 +5,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from json import load, loads
 from pathlib import Path
-from typing import Optional, final, override
+from typing import Optional, final
 
 from src.oceanprotocol_job_details.dataclasses.constants import (
     DidKeys,
@@ -38,7 +38,6 @@ class EnvironmentLoader(Loader[JobDetails]):
         super().__init__()
         self.mapper = mapper
 
-    @override
     def load(self, *args, **kwargs) -> JobDetails:
         root, dids = self._root(), self._dids()
 
