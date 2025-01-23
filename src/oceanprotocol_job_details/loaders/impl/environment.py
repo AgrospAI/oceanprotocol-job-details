@@ -16,7 +16,7 @@ from src.oceanprotocol_job_details.dataclasses.job_details import Algorithm, Job
 from src.oceanprotocol_job_details.loaders.loader import Loader
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class _Keys:
     """Environment keys passed to the algorithm"""
 
