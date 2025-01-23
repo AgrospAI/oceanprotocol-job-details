@@ -27,7 +27,7 @@ If instead of the environment variables, we want to use another kind of mapping,
 
 ```Python
 from oceanprotocol_job_details.job_details import OceanProtocolJobDetails
-from src.oceanprotocol_job_details.loaders.impl.environment import Keys
+from oceanprotocol_job_details.loaders.impl.environment import Keys
 
 # Fill in with values that will be used instead of env
 custom_mapper = {
