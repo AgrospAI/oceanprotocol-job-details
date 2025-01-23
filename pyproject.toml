@@ -24,7 +24,7 @@ requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-packages = [{ include = "src/oceanprotocol_job_details" }]
+packages = [{ include = "oceanprotocol_job_details" }]
 
 [tool.poetry.dependencies]
 python = ">3.9"
