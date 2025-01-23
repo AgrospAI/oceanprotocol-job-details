@@ -24,19 +24,18 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.x"
+          python-version: "3.9"
 
-      - name: Build release distributions
-        uses: davidkhala/poetry-buildpack@v0
+      - name: Setup and Install Poetry
+        uses: pronovic/setup-poetry@v2.0.2
         with:
-          test-entry-point: pytest
-          working-directory: . 
+          version: 2.0.1
 
-      - name: Upload distributions
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-dists
-          path: dist/
+      - name: Install dependencies, run tests and build distribution
+        run: |
+          poetry install
+          poetry run pytest
+          poetry build
 
       - name: pypi-publish
         uses: pypa/gh-action-pypi-publish@v1.12.3
