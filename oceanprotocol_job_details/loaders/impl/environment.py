@@ -51,7 +51,7 @@ class EnvironmentLoader(Loader[JobDetails]):
         )
 
     def _root(self) -> Path:
-        return Path(self.mapper.get(Keys.ROOT, ""))
+        return Path(self.mapper.get(Keys.ROOT, "/"))
 
     def _dids(self) -> Sequence[str]:
         return loads(self.mapper.get(Keys.DIDS)) if Keys.DIDS in self.mapper else []
