@@ -2,10 +2,10 @@ from pathlib import Path
 
 import pytest
 
-from src.oceanprotocol_job_details.dataclasses.job_details import JobDetails
-from src.oceanprotocol_job_details.dataclasses.constants import Paths
-from src.oceanprotocol_job_details.job_details import OceanProtocolJobDetails
-from src.oceanprotocol_job_details.loaders.impl.environment import Keys
+from oceanprotocol_job_details.dataclasses.job_details import JobDetails
+from oceanprotocol_job_details.dataclasses.constants import Paths
+from oceanprotocol_job_details.job_details import OceanProtocolJobDetails
+from oceanprotocol_job_details.loaders.impl.environment import Keys
 
 
 details: JobDetails = None
