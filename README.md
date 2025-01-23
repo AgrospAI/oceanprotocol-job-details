@@ -17,6 +17,8 @@ from oceanprotocol_job_details.job_details import OceanProtocolJobDetails
 
 # Using default parameters
 job_details = OceanProtocolJobDetails().load()
+
+job_details
 ```
 
 ### Advanced Usage (not recommended)
