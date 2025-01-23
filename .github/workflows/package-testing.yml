@@ -17,30 +17,28 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        poetry-version: [2.0.1]
 
     steps:
     - uses: actions/checkout@v4
+    
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
+
+    - name: Setup and Install Poetry
+      # You may pin to the exact commit or the version.
+      # uses: pronovic/setup-poetry@4dc2ce9a7c5efc1ed93255070bdfef280999bb6f
+      uses: pronovic/setup-poetry@v2.0.2
+      with:
+        # Version of Poetry to install (>= 1.8.0)
+        version: 2.0.1
+
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        python -m pip install pytest
-    - name: semantic-poetry
-      # You may pin to the exact commit or the version.
-      # uses: matteo4diani/poetry-semantic-release@26ea7d9088a6c010b121ae0ce61dd9790f5825ed
-      uses: matteo4diani/poetry-semantic-release@v0
-      with:
-        # GitHub Token
-        github-token: $${{ secrets.GITHUB_TOKEN }}
-        # PyPI Token
-        pypi-token: ${{ secrets.PYPI_TOKEN }}
-        # Main branch name
-        main-branch: main
-        # Python version
-        python-version: ${{ matrix.python-version }}
+        poetry install
+    
     - name: Test with pytest
       run: |
-        pytest
+        poetry run pytest
