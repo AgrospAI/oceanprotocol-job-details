@@ -51,7 +51,12 @@ class EnvironmentLoader(Loader[JobDetails]):
         )
 
     def _root(self) -> Path:
-        return Path(self.mapper.get(Keys.ROOT, "/"))
+        root = Path(self.mapper.get(Keys.ROOT, "/"))
+
+        if not root.exists():
+            raise FileNotFoundError(f"Root folder {root} does not exist")
+
+        return root
 
     def _dids(self) -> Sequence[str]:
         return loads(self.mapper.get(Keys.DIDS)) if Keys.DIDS in self.mapper else []
@@ -64,8 +69,11 @@ class EnvironmentLoader(Loader[JobDetails]):
         files: Mapping[str, Sequence[Path]] = {}
         for did in dids:
             # Retrieve DDO from disk
-            file = root / Paths.DDOS / did
-            with open(file, "r") as f:
+            file_path = root / Paths.DDOS / did
+            if not file_path.exists():
+                raise FileNotFoundError(f"DDO file {file_path} does not exist")
+
+            with open(file_path, "r") as f:
                 ddo = load(f)
                 for service in ddo[DidKeys.SERVICE]:
                     if service[DidKeys.SERVICE_TYPE] == ServiceType.METADATA:
@@ -87,11 +95,17 @@ class EnvironmentLoader(Loader[JobDetails]):
 
     def _algorithm(self, root: Path) -> Algorithm:
         did = self.mapper.get(Keys.ALGORITHM, None)
+
         if not did:
             return None
+
+        ddo = root / Paths.DDOS / did
+        if not ddo.exists():
+            raise FileNotFoundError(f"DDO file {ddo} does not exist")
+
         return Algorithm(
             did=did,
-            ddo=root / Paths.DDOS / did,
+            ddo=ddo,
         )
 
     def _secret(self) -> str:
