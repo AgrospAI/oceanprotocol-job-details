@@ -2,7 +2,7 @@
 license = { file = "LICENSE" }
 
 name = "oceanprotocol-job-details"
-version = "0.0.4"
+version = "0.0.5"
 authors = [
     { name = "Christian López García", email = "christian.lopez@udl.cat" },
 ]
