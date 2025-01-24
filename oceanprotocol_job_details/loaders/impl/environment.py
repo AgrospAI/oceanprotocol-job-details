@@ -51,7 +51,7 @@ class EnvironmentLoader(Loader[JobDetails]):
         )
 
     def _root(self) -> Path:
-        root = Path(self.mapper.get(Keys.ROOT, "/"))
+        root = Path(self.mapper.get(Keys.ROOT, Path.home()))
 
         if not root.exists():
             raise FileNotFoundError(f"Root folder {root} does not exist")
