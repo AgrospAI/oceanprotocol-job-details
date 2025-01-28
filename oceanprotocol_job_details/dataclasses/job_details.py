@@ -1,4 +1,6 @@
 import json
+import logging
+import os
 from dataclasses import InitVar, dataclass
 from logging import getLogger
 from pathlib import Path
@@ -55,24 +57,39 @@ class JobDetails:
     # Cache parameters, should not be included as _fields_ of the class
     _parameters: InitVar[Optional[_MetadataType]] = None
 
+    def __post_init__(self, _):
+        os.makedirs(self.root / Paths.LOGS, exist_ok=True)
+
+        logging.getLogger().addHandler(
+            logging.FileHandler(
+                self.root / Paths.LOGS / "job_details.log",
+                mode="w",
+            )
+        )
+
     @property
-    def parameters(
-        self,
-        parameters: Optional[Path] = None,
-    ) -> _MetadataType:
+    def parameters(self, parameters: Optional[Path] = None) -> _MetadataType:
         """Parameters for algorithm job, read from default path"""
 
         if parameters is None:
             parameters = self.root / Paths.ALGORITHM_CUSTOM_PARAMETERS
 
         if self._parameters is None:
-            # Load the parameters from filesystem
-            with open(parameters, "r") as f:
-                try:
-                    self._parameters = json.load(f)
-                except json.JSONDecodeError as e:
-                    logger.warning(f"Error loading parameters file {parameters}: {e}")
-                    self._parameters = {}
+            if not parameters.exists():
+                logging.warning(
+                    f"Parameters file {parameters} not found, supplying empty"
+                )
+                self._parameters = {}
+            else:
+                # Load the parameters from filesystem
+                with open(parameters, "r") as f:
+                    try:
+                        self._parameters = json.load(f)
+                    except json.JSONDecodeError as e:
+                        self._parameters = {}
+                        logger.warning(
+                            f"Error loading parameters file {parameters}: {e}"
+                        )
 
         return self._parameters
 
