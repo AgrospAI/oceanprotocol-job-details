@@ -5,7 +5,7 @@ import pytest
 from oceanprotocol_job_details.dataclasses.job_details import JobDetails
 from oceanprotocol_job_details.dataclasses.constants import Paths
 from oceanprotocol_job_details.job_details import OceanProtocolJobDetails
-from oceanprotocol_job_details.loaders.impl.environment import Keys
+from oceanprotocol_job_details.loaders.impl.map import Keys
 
 
 details: JobDetails = None
@@ -13,16 +13,22 @@ details: JobDetails = None
 
 @pytest.fixture(scope="session", autouse=True)
 def setup():
+    keys = Keys()
+
     fake_env = {
-        Keys.DIDS: ' [ "8f67E08be5dD941a701c2491E814535522c33bC2" ]',
-        Keys.ALGORITHM: "6EDaE15f7314dC306BB6C382517D374356E6B9De",
-        Keys.SECRET: "MOCK-SECRET",
-        Keys.ROOT: Path(__file__).parent,
+        keys.DIDS: ' [ "8f67E08be5dD941a701c2491E814535522c33bC2" ]',
+        keys.ALGORITHM: "6EDaE15f7314dC306BB6C382517D374356E6B9De",
+        keys.SECRET: "MOCK-SECRET",
+        keys.ROOT: Path(__file__).parent,
     }
 
     global details
 
-    details = OceanProtocolJobDetails(implementation="env", mapper=fake_env).load()
+    details = OceanProtocolJobDetails(
+        implementation="map",
+        mapper=fake_env,
+        keys=keys,
+    ).load()
 
     yield
 

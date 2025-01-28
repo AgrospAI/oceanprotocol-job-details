@@ -1,12 +1,10 @@
 """Loads the current Job Details from the environment variables, could be abstracted to a more general 'mapper loader' but won't, since right now it fits our needs"""
 
-import os
-from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from json import JSONDecodeError, load, loads
 from logging import getLogger
 from pathlib import Path
-from typing import Optional, final
+from typing import Mapping, Optional, Sequence, final
 
 from oceanprotocol_job_details.dataclasses.constants import DidKeys, Paths, ServiceType
 from oceanprotocol_job_details.dataclasses.job_details import Algorithm, JobDetails
@@ -16,7 +14,7 @@ logger = getLogger(__name__)
 
 
 @dataclass(frozen=True)
-class _Keys:
+class Keys:
     """Environment keys passed to the algorithm"""
 
     ROOT: str = "ROOT_FOLDER"
@@ -25,18 +23,15 @@ class _Keys:
     DIDS: str = "DIDS"
 
 
-Keys = _Keys()
-del _Keys
-
-
 @final
-class EnvironmentLoader(Loader[JobDetails]):
+class Map(Loader[JobDetails]):
     """Loads the current Job Details from the environment variables"""
 
-    def __init__(self, mapper: Mapping[str, str] = os.environ):
-        super().__init__()
+    def __init__(self, mapper: Mapping[str, str], keys: Keys, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-        self.mapper = mapper
+        self._mapper = mapper
+        self._keys = keys
 
     def load(self, *args, **kwargs) -> JobDetails:
         root, dids = self._root(), self._dids()
@@ -50,7 +45,7 @@ class EnvironmentLoader(Loader[JobDetails]):
         )
 
     def _root(self) -> Path:
-        root = Path(self.mapper.get(Keys.ROOT, Path.home()))
+        root = Path(self._mapper.get(self._keys.ROOT, Path.home()))
 
         if not root.exists():
             raise FileNotFoundError(f"Root folder {root} does not exist")
@@ -58,7 +53,11 @@ class EnvironmentLoader(Loader[JobDetails]):
         return root
 
     def _dids(self) -> Sequence[Path]:
-        return loads(self.mapper.get(Keys.DIDS)) if Keys.DIDS in self.mapper else []
+        return (
+            loads(self._mapper.get(self._keys.DIDS))
+            if self._keys.DIDS in self._mapper
+            else []
+        )
 
     def _files(
         self,
@@ -98,7 +97,7 @@ class EnvironmentLoader(Loader[JobDetails]):
         return files
 
     def _algorithm(self, root: Path) -> Optional[Algorithm]:
-        did = self.mapper.get(Keys.ALGORITHM, None)
+        did = self._mapper.get(self._keys.ALGORITHM, None)
 
         if not did:
             return None
@@ -110,4 +109,4 @@ class EnvironmentLoader(Loader[JobDetails]):
         return Algorithm(did, ddo)
 
     def _secret(self) -> Optional[str]:
-        return self.mapper.get(Keys.SECRET, None)
+        return self._mapper.get(self._keys.SECRET, None)
