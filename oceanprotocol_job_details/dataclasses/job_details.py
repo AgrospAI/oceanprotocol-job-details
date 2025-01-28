@@ -50,9 +50,6 @@ class JobDetails:
     algorithm: Optional[Algorithm]
     """Details of the used algorithm"""
 
-    metadata: Optional[_MetadataType] = None
-    """Metadata of the job, TODO"""
-
     # Cache parameters, should not be included as _fields_ of the class
     _parameters: InitVar[Optional[_MetadataType]] = None
 

@@ -44,7 +44,6 @@ class EnvironmentLoader(Loader[JobDetails]):
         return JobDetails(
             root=root,
             dids=dids,
-            metadata=self._metadata(),
             files=self._files(root, dids),
             algorithm=self._algorithm(root),
             secret=self._secret(),
@@ -97,9 +96,6 @@ class EnvironmentLoader(Loader[JobDetails]):
                     ]
 
         return files
-
-    def _metadata(self) -> Mapping[str, str]:
-        return {}
 
     def _algorithm(self, root: Path) -> Optional[Algorithm]:
         did = self.mapper.get(Keys.ALGORITHM, None)
