@@ -1,12 +1,14 @@
 import json
-
 from dataclasses import InitVar, dataclass
+from logging import getLogger
 from pathlib import Path
 from typing import Any, Mapping, Optional, Sequence
 
 from oceanprotocol_job_details.dataclasses.constants import Paths
 
 _MetadataType = Mapping[str, Any]
+
+logger = getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -28,7 +30,7 @@ class Algorithm:
     """The DDO path of the algorithm used to process the data"""
 
 
-@dataclass(frozen=True)
+@dataclass
 class JobDetails:
     """Details of the current job, such as the used inputs and algorithm"""
 
@@ -47,26 +49,29 @@ class JobDetails:
     algorithm: Optional[Algorithm]
     """Details of the used algorithm"""
 
-    parameters7uy: Optional[Parameters]
-    """Custom parameters"""
+    metadata: Optional[_MetadataType] = None
+    """Metadata of the job, TODO"""
 
     # Cache parameters, should not be included as _fields_ of the class
     _parameters: InitVar[Optional[_MetadataType]] = None
-    _metadata: InitVar[Optional[_MetadataType]] = None
 
     @property
     def parameters(
         self,
-        parameter_data: Path = Paths.INPUTS / "algoCustomData.json",
+        parameters: Optional[Path] = None,
     ) -> _MetadataType:
         """Parameters for algorithm job, read from default path"""
 
+        if parameters is None:
+            parameters = self.root / Paths.INPUTS / "algoCustomData.json"
+
         if self._parameters is None:
-            # Load the parameters from the default path
-            with open(parameter_data) as f:
+            # Load the parameters from filesystem
+            with open(parameters, "r") as f:
                 try:
                     self._parameters = json.load(f)
                 except json.JSONDecodeError as e:
+                    logger.warning(f"Error loading parameters file {parameters}: {e}")
                     self._parameters = {}
 
         return self._parameters

@@ -62,9 +62,13 @@ class EnvironmentLoader(Loader[JobDetails]):
         return loads(self.mapper.get(Keys.DIDS)) if Keys.DIDS in self.mapper else []
 
     def _files(
-        self, root: Path, dids: Optional[Sequence[Path]], io
+        self,
+        root: Path,
+        dids: Optional[Sequence[Path]],
     ) -> Mapping[str, Sequence[Path]]:
+
         files: Mapping[str, Sequence[Path]] = {}
+
         for did in dids:
             # Retrieve DDO from disk
             file_path = root / Paths.DDOS / did
@@ -79,18 +83,19 @@ class EnvironmentLoader(Loader[JobDetails]):
                     continue
 
                 for service in ddo[DidKeys.SERVICE]:
-                    if service[DidKeys.SERVICE_TYPE] == ServiceType.METADATA:
-                        base_path = root / Paths.INPUTS / did
-                        files[did] = [
-                            base_path / str(idx)
-                            for idx in range(
-                                len(
-                                    service[DidKeys.ATTRIBUTES][DidKeys.MAIN][
-                                        DidKeys.FILES
-                                    ]
-                                )
+                    if service[DidKeys.SERVICE_TYPE] != ServiceType.METADATA:
+                        continue
+
+                    did_path = root / Paths.INPUTS / did
+                    files[did] = [
+                        did_path / str(idx)
+                        for idx in range(
+                            len(
+                                service[DidKeys.ATTRIBUTES][DidKeys.MAIN][DidKeys.FILES]
                             )
-                        ]
+                        )
+                    ]
+
         return files
 
     def _metadata(self) -> Mapping[str, str]:

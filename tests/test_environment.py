@@ -21,8 +21,11 @@ def setup():
     }
 
     global details
+
     details = OceanProtocolJobDetails(implementation="env", mapper=fake_env).load()
+
     yield
+
     print("JobDetails", details)
     print("Ending session")
 
@@ -53,3 +56,9 @@ def test_algorithm_did():
 
 def test_algorithm_ddo():
     assert details.algorithm.ddo == details.root / Paths.DDOS / details.algorithm.did
+
+
+def test_custom_parameters():
+    assert details.parameters is not None
+    assert len(details.parameters.keys()) == 2
+    assert details.parameters["isTrue"] == True
