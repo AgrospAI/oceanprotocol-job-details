@@ -1,7 +1,8 @@
 from typing import Literal, Optional
+
 from oceanprotocol_job_details.dataclasses.job_details import JobDetails
-from oceanprotocol_job_details.loaders.loader import Loader
 from oceanprotocol_job_details.loaders.impl.environment import EnvironmentLoader
+from oceanprotocol_job_details.loaders.loader import Loader
 
 _Implementations = Literal["env"]
 

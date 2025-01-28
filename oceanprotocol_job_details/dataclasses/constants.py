@@ -25,10 +25,13 @@ class _Paths:
     """Common paths used in the Ocean Protocol directories"""
 
     DATA: Path = Path("data")
+
     INPUTS: Path = DATA / "inputs"
     DDOS: Path = DATA / "ddos"
     OUTPUTS: Path = DATA / "outputs"
     LOGS: Path = DATA / "logs"
+
+    ALGORITHM_CUSTOM_PARAMETERS: Path = INPUTS / "algoCustomData.json"
 
 
 DidKeys = _DidKeys()

@@ -63,7 +63,7 @@ class JobDetails:
         """Parameters for algorithm job, read from default path"""
 
         if parameters is None:
-            parameters = self.root / Paths.INPUTS / "algoCustomData.json"
+            parameters = self.root / Paths.ALGORITHM_CUSTOM_PARAMETERS
 
         if self._parameters is None:
             # Load the parameters from filesystem
