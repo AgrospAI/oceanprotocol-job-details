@@ -2,7 +2,6 @@ import json
 import logging
 import os
 from dataclasses import InitVar, dataclass
-from logging import getLogger
 from pathlib import Path
 from typing import Any, Mapping, Optional, Sequence
 
@@ -10,7 +9,7 @@ from oceanprotocol_job_details.dataclasses.constants import Paths
 
 _MetadataType = Mapping[str, Any]
 
-logger = getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
