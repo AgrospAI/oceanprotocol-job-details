@@ -1,8 +1,20 @@
+import logging
 from typing import Literal, Optional
 
+from oceanprotocol_job_details.dataclasses.constants import Paths
 from oceanprotocol_job_details.dataclasses.job_details import JobDetails
 from oceanprotocol_job_details.loaders.impl.environment import EnvironmentLoader
 from oceanprotocol_job_details.loaders.loader import Loader
+
+# Logging setup for the module
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s",
+    handlers=[
+        logging.FileHandler(Paths.LOGS / "oceanprotocol_job_details.log"),
+        logging.StreamHandler(),
+    ],
+)
 
 _Implementations = Literal["env"]
 
