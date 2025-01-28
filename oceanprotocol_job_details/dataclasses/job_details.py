@@ -1,10 +1,29 @@
-from dataclasses import dataclass
+import json
+import logging
+import os
+from dataclasses import InitVar, dataclass
 from pathlib import Path
 from typing import Any, Mapping, Optional, Sequence
+
+from oceanprotocol_job_details.dataclasses.constants import Paths
+
+_MetadataType = Mapping[str, Any]
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class Parameters:
+    """Custom data for the algorithm, such as the algorithm's parameters"""
+
+    parameters: _MetadataType
+    """The parameters used by the algorithm"""
 
 
 @dataclass(frozen=True)
 class Algorithm:
+    """Details of the algorithm used to process the data"""
+
     did: str
     """The DID of the algorithm used to process the data"""
 
@@ -12,18 +31,15 @@ class Algorithm:
     """The DDO path of the algorithm used to process the data"""
 
 
-@dataclass(frozen=True)
+@dataclass
 class JobDetails:
     """Details of the current job, such as the used inputs and algorithm"""
 
     root: Path
     """The root folder of the Ocean Protocol directories"""
 
-    dids: Optional[Sequence[Path]]
+    dids: Sequence[Path]
     """Identifiers for the inputs"""
-
-    metadata: Mapping[str, Any]
-    """TODO: To define"""
 
     files: Mapping[str, Sequence[Path]]
     """Paths to the input files"""
@@ -33,3 +49,48 @@ class JobDetails:
 
     algorithm: Optional[Algorithm]
     """Details of the used algorithm"""
+
+    # Cache parameters, should not be included as _fields_ of the class
+    _parameters: InitVar[Optional[_MetadataType]] = None
+
+    def __post_init__(self, _):
+        os.makedirs(self.root / Paths.LOGS, exist_ok=True)
+
+        logging.getLogger().addHandler(
+            logging.FileHandler(
+                self.root / Paths.LOGS / "job_details.log",
+                mode="w",
+            )
+        )
+
+    @property
+    def parameters(self, parameters: Optional[Path] = None) -> _MetadataType:
+        """Parameters for algorithm job, read from default path"""
+
+        if parameters is None:
+            parameters = self.root / Paths.ALGORITHM_CUSTOM_PARAMETERS
+
+        if self._parameters is None:
+            if not parameters.exists():
+                logging.warning(
+                    f"Parameters file {parameters} not found, supplying empty"
+                )
+                self._parameters = {}
+            else:
+                # Load the parameters from filesystem
+                with open(parameters, "r") as f:
+                    try:
+                        self._parameters = json.load(f)
+                    except json.JSONDecodeError as e:
+                        self._parameters = {}
+                        logger.warning(
+                            f"Error loading parameters file {parameters}: {e}"
+                        )
+
+        return self._parameters
+
+
+del _MetadataType
+
+
+__all__ = ["Algorithm", "Parameters", "JobDetails"]
