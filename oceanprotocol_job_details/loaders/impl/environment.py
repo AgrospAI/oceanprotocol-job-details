@@ -3,17 +3,16 @@
 import os
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from json import load, loads
+from json import JSONDecodeError, load, loads
+from logging import getLogger
 from pathlib import Path
 from typing import Optional, final
 
-from oceanprotocol_job_details.dataclasses.constants import (
-    DidKeys,
-    Paths,
-    ServiceType,
-)
+from oceanprotocol_job_details.dataclasses.constants import DidKeys, Paths, ServiceType
 from oceanprotocol_job_details.dataclasses.job_details import Algorithm, JobDetails
 from oceanprotocol_job_details.loaders.loader import Loader
+
+logger = getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -36,6 +35,7 @@ class EnvironmentLoader(Loader[JobDetails]):
 
     def __init__(self, mapper: Mapping[str, str] = os.environ):
         super().__init__()
+
         self.mapper = mapper
 
     def load(self, *args, **kwargs) -> JobDetails:
@@ -46,7 +46,7 @@ class EnvironmentLoader(Loader[JobDetails]):
             dids=dids,
             metadata=self._metadata(),
             files=self._files(root, dids),
-            algorithm=self._algorithm(root=root),
+            algorithm=self._algorithm(root),
             secret=self._secret(),
         )
 
@@ -58,13 +58,11 @@ class EnvironmentLoader(Loader[JobDetails]):
 
         return root
 
-    def _dids(self) -> Sequence[str]:
+    def _dids(self) -> Sequence[Path]:
         return loads(self.mapper.get(Keys.DIDS)) if Keys.DIDS in self.mapper else []
 
     def _files(
-        self,
-        root: Path,
-        dids: Optional[Sequence[Path]],
+        self, root: Path, dids: Optional[Sequence[Path]], io
     ) -> Mapping[str, Sequence[Path]]:
         files: Mapping[str, Sequence[Path]] = {}
         for did in dids:
@@ -74,7 +72,12 @@ class EnvironmentLoader(Loader[JobDetails]):
                 raise FileNotFoundError(f"DDO file {file_path} does not exist")
 
             with open(file_path, "r") as f:
-                ddo = load(f)
+                try:
+                    ddo = load(f)
+                except JSONDecodeError as e:
+                    logger.warning(f"Error loading DDO file {file_path}: {e}")
+                    continue
+
                 for service in ddo[DidKeys.SERVICE]:
                     if service[DidKeys.SERVICE_TYPE] == ServiceType.METADATA:
                         base_path = root / Paths.INPUTS / did
@@ -93,7 +96,7 @@ class EnvironmentLoader(Loader[JobDetails]):
     def _metadata(self) -> Mapping[str, str]:
         return {}
 
-    def _algorithm(self, root: Path) -> Algorithm:
+    def _algorithm(self, root: Path) -> Optional[Algorithm]:
         did = self.mapper.get(Keys.ALGORITHM, None)
 
         if not did:
@@ -103,10 +106,7 @@ class EnvironmentLoader(Loader[JobDetails]):
         if not ddo.exists():
             raise FileNotFoundError(f"DDO file {ddo} does not exist")
 
-        return Algorithm(
-            did=did,
-            ddo=ddo,
-        )
+        return Algorithm(did, ddo)
 
-    def _secret(self) -> str:
-        return self.mapper.get(Keys.SECRET, "")
+    def _secret(self) -> Optional[str]:
+        return self.mapper.get(Keys.SECRET, None)
