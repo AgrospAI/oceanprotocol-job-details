@@ -9,7 +9,7 @@ from oceanprotocol_job_details.loaders.loader import Loader
 # Logging setup for the module
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s",
+    format="%(asctime)s [%(threadName)s] [%(levelname)s]  %(message)s",
     handlers=[
         logging.StreamHandler(),
     ],
