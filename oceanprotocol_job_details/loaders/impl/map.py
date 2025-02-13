@@ -45,17 +45,7 @@ class Map(Loader[JobDetails]):
         )
 
     def _root(self) -> Path:
-        """
-        Retrieves the root of the data from the default keys, defaults to '/'
-
-        Raises:
-            FileNotFoundError: If the given root folder does not exist
-
-        Returns:
-            Path: the root folder
-        """
-
-        root = Path(self._mapper.get(self._keys.ROOT, Path("/")))
+        root = Path(self._mapper.get(self._keys.ROOT, Path.home()))
 
         if not root.exists():
             raise FileNotFoundError(f"Root folder {root} does not exist")
@@ -74,6 +64,7 @@ class Map(Loader[JobDetails]):
         root: Path,
         dids: Optional[Sequence[Path]],
     ) -> Mapping[str, Sequence[Path]]:
+
         files: Mapping[str, Sequence[Path]] = {}
 
         for did in dids:
