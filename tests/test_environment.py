@@ -19,7 +19,6 @@ def setup():
         keys.DIDS: ' [ "8f67E08be5dD941a701c2491E814535522c33bC2" ]',
         keys.ALGORITHM: "6EDaE15f7314dC306BB6C382517D374356E6B9De",
         keys.SECRET: "MOCK-SECRET",
-        keys.ROOT: Path(__file__).parent,
     }
 
     global details
@@ -34,10 +33,6 @@ def setup():
 
     print("JobDetails", details)
     print("Ending session")
-
-
-def test_root():
-    assert details.root == Path(__file__).parent, "Incorrect root folder"
 
 
 def test_files_exists():
@@ -61,10 +56,10 @@ def test_algorithm_did():
 
 
 def test_algorithm_ddo():
-    assert details.algorithm.ddo == details.root / Paths.DDOS / details.algorithm.did
+    assert details.algorithm.ddo == Paths.DDOS / details.algorithm.did
 
 
 def test_custom_parameters():
     assert details.parameters is not None
     assert len(details.parameters.keys()) == 2
-    assert details.parameters["isTrue"] == True
+    assert details.parameters["isTrue"] is True

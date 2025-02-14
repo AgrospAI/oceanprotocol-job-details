@@ -2,7 +2,9 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
-@dataclass(frozen=True)
+@dataclass(
+    frozen=True,
+)
 class _DidKeys:
     """Common keys inside the DIDs"""
 
@@ -13,18 +15,24 @@ class _DidKeys:
     FILES: str = "files"
 
 
-@dataclass(frozen=True)
+@dataclass(
+    frozen=True,
+)
 class _ServiceType:
     """Service types inside the DIDs"""
 
     METADATA: str = "metadata"
 
 
-@dataclass(frozen=True)
+@dataclass(
+    frozen=True,
+)
 class _Paths:
     """Common paths used in the Ocean Protocol directories"""
 
-    DATA: Path = Path("data")
+    ROOT: Path = Path("/")
+
+    DATA: Path = ROOT / "data"
 
     INPUTS: Path = DATA / "inputs"
     DDOS: Path = DATA / "ddos"
@@ -32,6 +40,11 @@ class _Paths:
     LOGS: Path = DATA / "logs"
 
     ALGORITHM_CUSTOM_PARAMETERS: Path = INPUTS / "algoCustomData.json"
+
+    def __post_init__(self) -> None:
+        # If .env key ROOT FOLDER is defined, change the ROOT of all data, otherwise keep as default
+        # TODO:
+        ...
 
 
 DidKeys = _DidKeys()
