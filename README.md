@@ -19,6 +19,15 @@ from oceanprotocol_job_details.job_details import OceanProtocolJobDetails
 job_details = OceanProtocolJobDetails().load()
 ```
 
+Assumes the following directory structure:
+```
+<ROOT_FOLDER>
+└───data
+    ├───ddos
+    ├───inputs
+    └───logs
+```
+
 ### Advanced Usage (not recommended)
 
 If instead of the environment variables, we want to use another kind of mapping, can pass it as a parameter and it will work as long as it has the same key values (Can be implemented in a more generic way, but there is no need right now).
@@ -29,6 +38,7 @@ from oceanprotocol_job_details.loaders.impl.environment import Keys
 
 # Fill in with values that will be used instead of env
 custom_mapper = {
+    Keys.ROOT_FOLDER: " ... ", # Use when you don't want the algorithm to take '/' as base Path
     Keys.ALGORITHM: " ... ",
     Keys.DIDS: " ... ",
     Keys.SECRET: " ... ",
