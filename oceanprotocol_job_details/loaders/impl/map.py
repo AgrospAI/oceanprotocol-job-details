@@ -1,6 +1,6 @@
 """Loads the current Job Details from the environment variables, could be abstracted to a more general 'mapper loader' but won't, since right now it fits our needs"""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from json import JSONDecodeError, load, loads
 from logging import getLogger
 from pathlib import Path
@@ -19,6 +19,7 @@ logger = getLogger(__name__)
 class Keys:
     """Environment keys passed to the algorithm"""
 
+    ROOT_FOLDER = "ROOT_FOLDER"
     SECRET: str = "secret"
     ALGORITHM: str = "TRANSFORMATION_DID"
     DIDS: str = "DIDS"
@@ -41,6 +42,19 @@ class Map(
 
         self._mapper = mapper
         self._keys = keys
+
+        # Update the default Paths if the user has passed a root folder
+        if Keys.ROOT_FOLDER in self._mapper:
+            root = self._mapper[Keys.ROOT_FOLDER]
+
+            # Update the rest of paths
+            Paths.DATA = Path(root) / "data"
+            Paths.INPUTS = Paths.DATA / "inputs"
+            Paths.DDOS = Paths.DATA / "ddos"
+            Paths.OUTPUTS = Paths.DATA / "outputs"
+            Paths.LOGS = Paths.DATA / "logs"
+            Paths.ALGORITHM_CUSTOM_PARAMETERS = Paths.INPUTS / "algoCustomData.json"
+
 
     def load(
         self,
