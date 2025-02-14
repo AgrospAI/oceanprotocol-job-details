@@ -31,7 +31,6 @@ from oceanprotocol_job_details.loaders.impl.environment import Keys
 custom_mapper = {
     Keys.ALGORITHM: " ... ",
     Keys.DIDS: " ... ",
-    Keys.ROOT: " ... ",
     Keys.SECRET: " ... ",
 }
 

@@ -12,7 +12,9 @@ _MetadataType = Mapping[str, Any]
 logger = logging.getLogger(__name__)
 
 
-@dataclass(frozen=True)
+@dataclass(
+    frozen=True,
+)
 class Parameters:
     """Custom data for the algorithm, such as the algorithm's parameters"""
 
@@ -20,7 +22,9 @@ class Parameters:
     """The parameters used by the algorithm"""
 
 
-@dataclass(frozen=True)
+@dataclass(
+    frozen=True,
+)
 class Algorithm:
     """Details of the algorithm used to process the data"""
 
@@ -34,9 +38,6 @@ class Algorithm:
 @dataclass
 class JobDetails:
     """Details of the current job, such as the used inputs and algorithm"""
-
-    root: Path
-    """The root folder of the Ocean Protocol directories"""
 
     dids: Sequence[Path]
     """Identifiers for the inputs"""
@@ -53,22 +54,28 @@ class JobDetails:
     # Cache parameters, should not be included as _fields_ of the class
     _parameters: InitVar[Optional[_MetadataType]] = None
 
-    def __post_init__(self, _):
-        os.makedirs(self.root / Paths.LOGS, exist_ok=True)
+    def __post_init__(
+        self,
+        _,
+    ):
+        os.makedirs(Paths.LOGS, exist_ok=True)
 
         logging.getLogger().addHandler(
             logging.FileHandler(
-                self.root / Paths.LOGS / "job_details.log",
+                Paths.LOGS / "job_details.log",
                 mode="w",
             )
         )
 
     @property
-    def parameters(self, parameters: Optional[Path] = None) -> _MetadataType:
+    def parameters(
+        self,
+        parameters: Optional[Path] = None,
+    ) -> _MetadataType:
         """Parameters for algorithm job, read from default path"""
 
         if parameters is None:
-            parameters = self.root / Paths.ALGORITHM_CUSTOM_PARAMETERS
+            parameters = Paths.ALGORITHM_CUSTOM_PARAMETERS
 
         if self._parameters is None:
             if not parameters.exists():

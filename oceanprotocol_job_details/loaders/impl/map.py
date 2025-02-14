@@ -1,6 +1,6 @@
 """Loads the current Job Details from the environment variables, could be abstracted to a more general 'mapper loader' but won't, since right now it fits our needs"""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from json import JSONDecodeError, load, loads
 from logging import getLogger
 from pathlib import Path
@@ -13,56 +13,66 @@ from oceanprotocol_job_details.loaders.loader import Loader
 logger = getLogger(__name__)
 
 
-@dataclass(frozen=True)
+@dataclass(
+    frozen=True,
+)
 class Keys:
     """Environment keys passed to the algorithm"""
 
-    ROOT: str = "ROOT_FOLDER"
+    ROOT_FOLDER = "ROOT_FOLDER"
     SECRET: str = "secret"
     ALGORITHM: str = "TRANSFORMATION_DID"
     DIDS: str = "DIDS"
 
 
 @final
-class Map(Loader[JobDetails]):
+class Map(
+    Loader[JobDetails],
+):
     """Loads the current Job Details from the environment variables"""
 
-    def __init__(self, mapper: Mapping[str, str], keys: Keys, *args, **kwargs):
+    def __init__(
+        self,
+        mapper: Mapping[str, str],
+        keys: Keys,
+        *args,
+        **kwargs,
+    ) -> None:
         super().__init__(*args, **kwargs)
 
         self._mapper = mapper
         self._keys = keys
 
-    def load(self, *args, **kwargs) -> JobDetails:
-        root, dids = self._root(), self._dids()
+        # Update the default Paths if the user has passed a root folder
+        if Keys.ROOT_FOLDER in self._mapper:
+            root = self._mapper[Keys.ROOT_FOLDER]
+
+            # Update the rest of paths
+            Paths.DATA = Path(root) / "data"
+            Paths.INPUTS = Paths.DATA / "inputs"
+            Paths.DDOS = Paths.DATA / "ddos"
+            Paths.OUTPUTS = Paths.DATA / "outputs"
+            Paths.LOGS = Paths.DATA / "logs"
+            Paths.ALGORITHM_CUSTOM_PARAMETERS = Paths.INPUTS / "algoCustomData.json"
+
+
+    def load(
+        self,
+        *args,
+        **kwargs,
+    ) -> JobDetails:
+        dids = self._dids()
 
         return JobDetails(
-            root=root,
             dids=dids,
-            files=self._files(root, dids),
-            algorithm=self._algorithm(root),
+            files=self._files(dids),
+            algorithm=self._algorithm(),
             secret=self._secret(),
         )
 
-    def _root(self) -> Path:
-        """
-        Retrieves the root of the data from the default keys, defaults to '/'
-
-        Raises:
-            FileNotFoundError: If the given root folder does not exist
-
-        Returns:
-            Path: the root folder
-        """
-
-        root = Path(self._mapper.get(self._keys.ROOT, Path("/")))
-
-        if not root.exists():
-            raise FileNotFoundError(f"Root folder {root} does not exist")
-
-        return root
-
-    def _dids(self) -> Sequence[Path]:
+    def _dids(
+        self,
+    ) -> Sequence[Path]:
         return (
             loads(self._mapper.get(self._keys.DIDS))
             if self._keys.DIDS in self._mapper
@@ -71,14 +81,13 @@ class Map(Loader[JobDetails]):
 
     def _files(
         self,
-        root: Path,
         dids: Optional[Sequence[Path]],
     ) -> Mapping[str, Sequence[Path]]:
         files: Mapping[str, Sequence[Path]] = {}
 
         for did in dids:
             # Retrieve DDO from disk
-            file_path = root / Paths.DDOS / did
+            file_path = Paths.DDOS / did
             if not file_path.exists():
                 raise FileNotFoundError(f"DDO file {file_path} does not exist")
 
@@ -93,7 +102,7 @@ class Map(Loader[JobDetails]):
                     if service[DidKeys.SERVICE_TYPE] != ServiceType.METADATA:
                         continue
 
-                    did_path = root / Paths.INPUTS / did
+                    did_path = Paths.INPUTS / did
                     files[did] = [
                         did_path / str(idx)
                         for idx in range(
@@ -105,17 +114,21 @@ class Map(Loader[JobDetails]):
 
         return files
 
-    def _algorithm(self, root: Path) -> Optional[Algorithm]:
+    def _algorithm(
+        self,
+    ) -> Optional[Algorithm]:
         did = self._mapper.get(self._keys.ALGORITHM, None)
 
         if not did:
             return None
 
-        ddo = root / Paths.DDOS / did
+        ddo = Paths.DDOS / did
         if not ddo.exists():
             raise FileNotFoundError(f"DDO file {ddo} does not exist")
 
         return Algorithm(did, ddo)
 
-    def _secret(self) -> Optional[str]:
+    def _secret(
+        self,
+    ) -> Optional[str]:
         return self._mapper.get(self._keys.SECRET, None)
