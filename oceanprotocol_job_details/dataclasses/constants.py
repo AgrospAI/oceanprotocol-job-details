@@ -2,9 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
-@dataclass(
-    frozen=True,
-)
+@dataclass(frozen=True)
 class _DidKeys:
     """Common keys inside the DIDs"""
 
@@ -15,9 +13,7 @@ class _DidKeys:
     FILES: str = "files"
 
 
-@dataclass(
-    frozen=True,
-)
+@dataclass(frozen=True)
 class _ServiceType:
     """Service types inside the DIDs"""
 

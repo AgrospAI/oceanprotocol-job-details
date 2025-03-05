@@ -1,6 +1,6 @@
 """Loads the current Job Details from the environment variables, could be abstracted to a more general 'mapper loader' but won't, since right now it fits our needs"""
 
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from json import JSONDecodeError, load, loads
 from logging import getLogger
 from pathlib import Path
@@ -8,14 +8,13 @@ from typing import Mapping, Optional, Sequence, final
 
 from oceanprotocol_job_details.dataclasses.constants import DidKeys, Paths, ServiceType
 from oceanprotocol_job_details.dataclasses.job_details import Algorithm, JobDetails
+from oceanprotocol_job_details.loaders.impl.utils import do
 from oceanprotocol_job_details.loaders.loader import Loader
 
 logger = getLogger(__name__)
 
 
-@dataclass(
-    frozen=True,
-)
+@dataclass(frozen=True)
 class Keys:
     """Environment keys passed to the algorithm"""
 
@@ -26,18 +25,10 @@ class Keys:
 
 
 @final
-class Map(
-    Loader[JobDetails],
-):
+class Map(Loader[JobDetails]):
     """Loads the current Job Details from the environment variables"""
 
-    def __init__(
-        self,
-        mapper: Mapping[str, str],
-        keys: Keys,
-        *args,
-        **kwargs,
-    ) -> None:
+    def __init__(self, mapper: Mapping[str, str], keys: Keys, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
         self._mapper = mapper
@@ -55,12 +46,7 @@ class Map(
             Paths.LOGS = Paths.DATA / "logs"
             Paths.ALGORITHM_CUSTOM_PARAMETERS = Paths.INPUTS / "algoCustomData.json"
 
-
-    def load(
-        self,
-        *args,
-        **kwargs,
-    ) -> JobDetails:
+    def load(self, *args, **kwargs) -> JobDetails:
         dids = self._dids()
 
         return JobDetails(
@@ -70,37 +56,40 @@ class Map(
             secret=self._secret(),
         )
 
-    def _dids(
-        self,
-    ) -> Sequence[Path]:
+    def _dids(self) -> Sequence[Path]:
         return (
             loads(self._mapper.get(self._keys.DIDS))
             if self._keys.DIDS in self._mapper
             else []
         )
 
-    def _files(
-        self,
-        dids: Optional[Sequence[Path]],
-    ) -> Mapping[str, Sequence[Path]]:
+    def _files(self, dids: Optional[Sequence[Path]]) -> Mapping[str, Sequence[Path]]:
+        """Iterate through the given DIDs and retrieve their respective filepaths
+
+        :param dids: dids to read the files from
+        :type dids: Optional[Sequence[Path]]
+        :raises FileNotFoundError: if the DDO file does not exist
+        :return: _description_
+        :rtype: Mapping[str, Sequence[Path]]
+        """
+
         files: Mapping[str, Sequence[Path]] = {}
 
         for did in dids:
-            # Retrieve DDO from disk
+            # For each given DID, check if the DDO file exists and read its metadata
+
             file_path = Paths.DDOS / did
             if not file_path.exists():
                 raise FileNotFoundError(f"DDO file {file_path} does not exist")
 
             with open(file_path, "r") as f:
-                try:
-                    ddo = load(f)
-                except JSONDecodeError as e:
-                    logger.warning(f"Error loading DDO file {file_path}: {e}")
+                ddo = do(lambda: load(f), JSONDecodeError)
+                if not ddo:
                     continue
 
-                for service in ddo[DidKeys.SERVICE]:
+                for service in do(lambda: ddo[DidKeys.SERVICE], KeyError, default=[]):
                     if service[DidKeys.SERVICE_TYPE] != ServiceType.METADATA:
-                        continue
+                        continue  # Only read the metadata of the services
 
                     did_path = Paths.INPUTS / did
                     files[did] = [
@@ -114,9 +103,7 @@ class Map(
 
         return files
 
-    def _algorithm(
-        self,
-    ) -> Optional[Algorithm]:
+    def _algorithm(self) -> Optional[Algorithm]:
         did = self._mapper.get(self._keys.ALGORITHM, None)
 
         if not did:
@@ -128,7 +115,5 @@ class Map(
 
         return Algorithm(did, ddo)
 
-    def _secret(
-        self,
-    ) -> Optional[str]:
+    def _secret(self) -> Optional[str]:
         return self._mapper.get(self._keys.SECRET, None)
