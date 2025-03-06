@@ -1,9 +1,10 @@
-import json
 import logging
 import os
 from dataclasses import InitVar, dataclass
 from pathlib import Path
 from typing import Any, Mapping, Optional, Sequence
+
+from orjson import JSONDecodeError, loads
 
 from oceanprotocol_job_details.dataclasses.constants import Paths
 
@@ -50,13 +51,6 @@ class JobDetails:
     # Cache parameters, should not be included as _fields_ of the class
     _parameters: InitVar[Optional[_MetadataType]] = None
 
-    def __post_init__(self, _):
-        os.makedirs(Paths.LOGS, exist_ok=True)
-
-        logging.getLogger().addHandler(
-            logging.FileHandler(Paths.LOGS / "job_details.log", mode="w")
-        )
-
     @property
     def parameters(self, parameters: Optional[Path] = None) -> _MetadataType:
         """Parameters for algorithm job, read from default path"""
@@ -66,16 +60,14 @@ class JobDetails:
 
         if self._parameters is None:
             if not parameters.exists():
-                logging.warning(
-                    f"Parameters file {parameters} not found, supplying empty"
-                )
+                logging.warning(f"Missing parameters file: {parameters} not found")
                 self._parameters = {}
             else:
                 # Load the parameters from filesystem
                 with open(parameters, "r") as f:
                     try:
-                        self._parameters = json.load(f)
-                    except json.JSONDecodeError as e:
+                        self._parameters = loads(f.read())
+                    except JSONDecodeError as e:
                         self._parameters = {}
                         logger.warning(
                             f"Error loading parameters file {parameters}: {e}"
