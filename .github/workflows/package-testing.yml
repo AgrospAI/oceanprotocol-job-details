@@ -16,29 +16,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
-        poetry-version: [2.0.1]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
 
     steps:
     - uses: actions/checkout@v4
     
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        version: "0.6.4"
+
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Setup and Install Poetry
-      # You may pin to the exact commit or the version.
-      # uses: pronovic/setup-poetry@4dc2ce9a7c5efc1ed93255070bdfef280999bb6f
-      uses: pronovic/setup-poetry@v2.0.2
-      with:
-        # Version of Poetry to install (>= 1.8.0)
-        version: 2.0.1
-
     - name: Install dependencies
-      run: |
-        poetry install
+      run: uv sync
     
     - name: Test with pytest
-      run: |
-        poetry run pytest
+      run: uv run pytest

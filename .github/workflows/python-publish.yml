@@ -22,14 +22,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Setup and Install uv
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version: "3.9"
+          version: "0.6.4"
 
-      - name: Setup and Install Poetry
-        uses: pronovic/setup-poetry@v2.0.2
-        with:
-          version: 2.0.1
+      - name: Set up Python
+        run: uv python install
 
       - name: Install dependencies, run tests and build distribution
         run: |
