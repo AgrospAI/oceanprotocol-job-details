@@ -49,8 +49,6 @@ class Map(Loader[JobDetails]):
     """Loads the current Job Details from the environment variables"""
 
     def __init__(self, mapper: Mapping[str, str], keys: Keys, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-
         self._mapper = mapper
         self._keys = keys
 
