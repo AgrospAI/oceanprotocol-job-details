@@ -5,7 +5,7 @@ description = "A Python package to get details from OceanProtocol jobs"
 authors = [
     { name = "Christian López García", email = "christian.lopez@udl.cat" },
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 readme = "README.md"
 license = { file = "LICENSE" }
 classifiers = [
@@ -13,10 +13,7 @@ classifiers = [
     "Operating System :: OS Independent",
     "License :: OSI Approved :: MIT License",
 ]
-dependencies = [
-    "orjson>=3.10.15",
-    "pytest>=8.3.4,<9",
-]
+dependencies = ["orjson>=3.10.15", "pydantic>=2.10.6", "pytest>=8.3.4,<9"]
 
 [project.urls]
 Homepage = "https://github.com/AgrospAI/oceanprotocol-job-details"
