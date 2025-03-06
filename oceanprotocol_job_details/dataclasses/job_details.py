@@ -12,9 +12,7 @@ _MetadataType = Mapping[str, Any]
 logger = logging.getLogger(__name__)
 
 
-@dataclass(
-    frozen=True,
-)
+@dataclass(frozen=True)
 class Parameters:
     """Custom data for the algorithm, such as the algorithm's parameters"""
 
@@ -22,9 +20,7 @@ class Parameters:
     """The parameters used by the algorithm"""
 
 
-@dataclass(
-    frozen=True,
-)
+@dataclass(frozen=True)
 class Algorithm:
     """Details of the algorithm used to process the data"""
 
@@ -54,24 +50,15 @@ class JobDetails:
     # Cache parameters, should not be included as _fields_ of the class
     _parameters: InitVar[Optional[_MetadataType]] = None
 
-    def __post_init__(
-        self,
-        _,
-    ):
+    def __post_init__(self, _):
         os.makedirs(Paths.LOGS, exist_ok=True)
 
         logging.getLogger().addHandler(
-            logging.FileHandler(
-                Paths.LOGS / "job_details.log",
-                mode="w",
-            )
+            logging.FileHandler(Paths.LOGS / "job_details.log", mode="w")
         )
 
     @property
-    def parameters(
-        self,
-        parameters: Optional[Path] = None,
-    ) -> _MetadataType:
+    def parameters(self, parameters: Optional[Path] = None) -> _MetadataType:
         """Parameters for algorithm job, read from default path"""
 
         if parameters is None:

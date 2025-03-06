@@ -28,6 +28,15 @@ Assumes the following directory structure:
     └───logs
 ```
 
+### Core functionalities
+
+Given the Ocean Protocol job details structure as in [https://github.com/GX4FM-Base-X/pontus-x-ontology](Pontus-X Ontology), parses the passed algorithm parameters into an object to use in your algorithms.
+
+1. Parsing JSON
+1. Validation
+1. Metadata and service extraction
+
+
 ### Advanced Usage (not recommended)
 
 If instead of the environment variables, we want to use another kind of mapping, can pass it as a parameter and it will work as long as it has the same key values (Can be implemented in a more generic way, but there is no need right now).
@@ -46,3 +55,5 @@ custom_mapper = {
 
 job_details = OceanProtocolJobDetails(mapper=custom_mapper).load()
 ```
+
+
