@@ -1,4 +1,3 @@
-from ctypes import ArgumentError
 import logging
 import os
 from typing import Any, Literal, Mapping, Optional
@@ -14,7 +13,7 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()],
 )
 
-_Implementations = Literal["map"]
+_Implementations = Literal["env"]
 
 
 class OceanProtocolJobDetails(Loader[JobDetails]):
@@ -28,33 +27,14 @@ class OceanProtocolJobDetails(Loader[JobDetails]):
         *args,
         **kwargs,
     ):
-        match implementation.lower():
-            case "map":
-                self._loader = lambda: Map(mapper=mapper, keys=keys, *args, **kwargs)
-            case _:
-                raise ArgumentError(f"Implementation {implementation} not valid")
+        if implementation == "map":
+            # As there are not more implementations, we can use the EnvironmentLoader directly
+            self._loader = lambda: Map(mapper=mapper, keys=keys, *args, **kwargs)
+        else:
+            raise NotImplementedError(f"Implementation {implementation} not supported")
 
     def load(self) -> JobDetails:
         return self._loader().load()
 
 
 del _Implementations
-
-
-def _main():
-    """Main function to test functionalities"""
-
-    # Re-define logging configuration
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format="%(asctime)s [%(threadName)s] [%(levelname)s]  %(message)s",
-        handlers=[logging.StreamHandler()],
-        force=True,
-    )
-
-    job_details = OceanProtocolJobDetails().load()
-    logging.info(f"Loaded job details: {job_details}")
-
-
-if __name__ == "__main__":
-    _main()

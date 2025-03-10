@@ -1,6 +1,6 @@
 [project]
 name = "oceanprotocol-job-details"
-version = "0.0.11"
+version = "0.0.12"
 description = "A Python package to get details from OceanProtocol jobs"
 authors = [
     { name = "Christian López García", email = "christian.lopez@udl.cat" },

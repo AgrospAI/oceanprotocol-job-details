@@ -6,7 +6,7 @@ from pathlib import Path
 class _DidKeys:
     """Common keys inside the DIDs"""
 
-    SERVICE: str = "service"
+    SERVICES: str = "services"
     SERVICE_TYPE: str = "type"
     ATTRIBUTES: str = "attributes"
     MAIN: str = "main"

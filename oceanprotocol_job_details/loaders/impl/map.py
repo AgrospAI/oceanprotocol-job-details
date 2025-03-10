@@ -41,7 +41,10 @@ def _update_paths_from_root(root: Path):
 
 
 def _files_from_service(service):
-    return service[DidKeys.ATTRIBUTES][DidKeys.MAIN][DidKeys.FILES]
+    files = service[DidKeys.FILES]
+    if isinstance(files, str):
+        return [files]
+    return files
 
 
 @final
@@ -60,7 +63,7 @@ class Map(Loader[JobDetails]):
     def load(self, *args, **kwargs) -> JobDetails:
         return self._from_dids(self._dids())
 
-    def _from_dids(self, dids: Sequence[Path]) -> JobDetails:
+    def _from_dids(self, dids: Sequence[str]) -> JobDetails:
         return JobDetails(
             dids=dids,
             files=self._files(dids),
@@ -68,14 +71,14 @@ class Map(Loader[JobDetails]):
             secret=self._secret(),
         )
 
-    def _dids(self) -> Sequence[Path]:
+    def _dids(self) -> Sequence[str]:
         return loads(self._mapper.get(self._keys.DIDS, []))
 
-    def _files(self, dids: Optional[Sequence[Path]]) -> Mapping[str, Sequence[Path]]:
+    def _files(self, dids: Optional[Sequence[str]]) -> Mapping[str, Sequence[Path]]:
         """Iterate through the given DIDs and retrieve their respective filepaths
 
         :param dids: dids to read the files from
-        :type dids: Optional[Sequence[Path]]
+        :type dids: Optional[Sequence[str]]
         :raises FileNotFoundError: if the DDO file does not exist
         :return: _description_
         :rtype: Mapping[str, Sequence[Path]]
@@ -84,7 +87,6 @@ class Map(Loader[JobDetails]):
         files: Mapping[str, Sequence[Path]] = {}
         for did in dids:
             # For each given DID, check if the DDO file exists and read its metadata
-
             ddo_path = Paths.DDOS / did
             do(lambda: ddo_path.exists(), exc=FileNotFoundError("Missing DDO file"))
 
@@ -93,9 +95,9 @@ class Map(Loader[JobDetails]):
                 if not ddo:
                     continue
 
-                for service in do(lambda: ddo[DidKeys.SERVICE], KeyError, default=[]):
-                    if service[DidKeys.SERVICE_TYPE] != ServiceType.METADATA:
-                        continue  # Only read the metadata of the services
+                for service in do(lambda: ddo[DidKeys.SERVICES], KeyError, default=[]):
+                    # if service[DidKeys.SERVICE_TYPE] != ServiceType.METADATA:
+                    #     continue  # Only read the metadata of the services
 
                     files_n = do(lambda: len(_files_from_service(service)), KeyError)
                     ddo_path = Paths.INPUTS / did
