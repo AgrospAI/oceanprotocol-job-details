@@ -17,7 +17,7 @@ def setup():
 
     fake_env = {
         keys.ROOT_FOLDER: Path(__file__).parent.absolute(),
-        keys.DIDS: ' [ "8f67E08be5dD941a701c2491E814535522c33bC2" ]',
+        keys.DIDS: ' [ "eb60f87363a36a5ae5cb8373524a8fd976b0cc5f8c40a706c615b857ae0e2974" ]',
         keys.ALGORITHM: "6EDaE15f7314dC306BB6C382517D374356E6B9De",
         keys.SECRET: "MOCK-SECRET",
     }
