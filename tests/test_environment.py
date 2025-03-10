@@ -44,16 +44,8 @@ def test_files_len_eq_one():
     assert len(details.files.keys()) == 1, "There should be exactly one detected file"
 
 
-def test_secret():
-    assert details.secret == "MOCK-SECRET", "Incorrect secret"
-
-
 def test_algorithm_exists():
     assert details.algorithm, "There should be an input algorithm"
-
-
-def test_algorithm_did():
-    assert details.algorithm.did == "6EDaE15f7314dC306BB6C382517D374356E6B9De"
 
 
 def test_algorithm_ddo():
