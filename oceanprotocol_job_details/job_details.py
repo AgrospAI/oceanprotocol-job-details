@@ -26,6 +26,7 @@ class OceanProtocolJobDetails(Generic[T]):
     Those needed environment variables are:
     - DIDS: The DIDs of the inputs
     - TRANSFORMATION_DID: The DID of the transformation algorithm
+    - SECRET (optional): A really secret secret
 
     """
 
@@ -36,4 +37,4 @@ class OceanProtocolJobDetails(Generic[T]):
         )
 
     def load(self) -> JobDetails[T]:
-        return self.job_details_loader().load()
+        return self.job_details_loader().load()  # type:  ignore

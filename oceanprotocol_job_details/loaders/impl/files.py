@@ -13,19 +13,24 @@ class DIDPaths:
     ddo: Path
     input_files: Sequence[Path]
 
+    def __post_init__(self) -> None:
+        assert self.ddo.exists(), f"DDO {self.ddo} does not exist"
+        for input_file in self.input_files:
+            assert input_file.exists(), f"File {input_file} does not exist"
+
+    def __len__(self) -> int:
+        return len(self.input_files)
+
 
 @dataclass(frozen=True)
 class Files:
     files: Sequence[DIDPaths]
 
-    def __post_init__(self) -> None:
-        for file in self.files:
-            assert file.ddo.exists(), f"File {file} does not exist"
-            for input_file in file.input_files:
-                assert input_file.exists(), f"File {input_file} does not exist"
-
     def __iter__(self) -> Iterator[DIDPaths]:
         return iter(self.files)
+
+    def __len__(self) -> int:
+        return len(self.files)
 
 
 @final
