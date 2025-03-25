@@ -1,15 +1,13 @@
-from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
+from typing import Protocol, TypeVar
+
+T = TypeVar("T", covariant=True)
 
 
-T = TypeVar("T")
+class Loader(Protocol[T]):
 
-
-class Loader(ABC, Generic[T]):
-    @abstractmethod
-    def load(self, *args, **kwargs) -> T:
+    def load(self) -> T:
         """Load an instance of the given type"""
-        pass
+        ...
 
 
 del T

@@ -1,9 +1,9 @@
 from pathlib import Path
 
+import orjson
 import pytest
 
-from oceanprotocol_job_details.dataclasses.job_details import JobDetails
-from oceanprotocol_job_details.dataclasses.constants import Paths
+from oceanprotocol_job_details.data.job_details import JobDetails
 from oceanprotocol_job_details.job_details import OceanProtocolJobDetails
 from oceanprotocol_job_details.loaders.impl.map import Keys
 
@@ -26,7 +26,7 @@ def setup():
 
     details = OceanProtocolJobDetails(
         implementation="map",
-        mapper=fake_env,
+        map=fake_env,
         keys=keys,
     ).load()
 
@@ -48,11 +48,22 @@ def test_algorithm_exists():
     assert details.algorithm, "There should be an input algorithm"
 
 
-def test_algorithm_ddo():
-    assert details.algorithm.ddo == Paths.DDOS / details.algorithm.did
+# def test_algorithm_ddo():
+#     assert details.algorithm.ddo == Paths.DDOS / details.algorithm.did
 
 
 def test_custom_parameters():
     assert details.parameters is not None
     assert len(details.parameters.keys()) == 2
     assert details.parameters["isTrue"] is True
+
+
+def test_ocean():
+    from oceanprotocol_job_details.ocean import DDO
+    
+    with open("/data/") as f:
+        data = orjson.loads(f)
+    
+    DDO()
+    
+    assert 

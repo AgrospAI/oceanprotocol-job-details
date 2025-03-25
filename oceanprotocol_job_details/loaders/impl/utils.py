@@ -1,5 +1,5 @@
-from logging import WARNING, getLogger
-from typing import Callable, TypeVar
+from logging import getLogger
+from typing import Callable, Type, TypeVar
 
 logger = getLogger(__name__)
 R = TypeVar("R")
@@ -7,20 +7,17 @@ R = TypeVar("R")
 
 def do(
     function: Callable[[], R],
-    exception: Exception = Exception,
+    exception: Type[Exception] = Exception,
     *,
-    log_level=WARNING,
-    default: R = None,
-    exc=False,
-) -> R:
+    default: R | None = None,
+    error: bool = False,
+) -> R | None:
     """Executes a function and logs the exception if it fails
 
     :param function: function to call
     :type function: Callable
-    :param exception: exception to catch
-    :type exception: Exception
-    :param log_level: logging level to use
-    :type log_level: int
+    :param exception: expected exception type to catch
+    :type exception: Type[Exception]
     :param default: default value to return if the function fails
     :type default: R
     :param exc: if the exception should be raised
@@ -32,11 +29,9 @@ def do(
     try:
         return function()
     except exception as e:
-        logger.log(log_level, e)
-        if exc:
-            if isinstance(exc, Exception):
-                raise exc from e
+        if error:
             raise e
+        logger.warning(e)
         return default
 
 

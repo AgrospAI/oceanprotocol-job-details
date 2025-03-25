@@ -1,40 +1,39 @@
 import logging
 import os
-from typing import Any, Literal, Mapping, Optional
+from typing import Generic, TypeVar
 
-from oceanprotocol_job_details.dataclasses.job_details import JobDetails
-from oceanprotocol_job_details.loaders.impl.map import Keys, Map
+from oceanprotocol_job_details.loaders.impl.job_details import JobDetailsLoader
 from oceanprotocol_job_details.loaders.loader import Loader
+from oceanprotocol_job_details.ocean import JobDetails
 
-# Logging setup for the module
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(threadName)s] [%(levelname)s]  %(message)s",
     handlers=[logging.StreamHandler()],
 )
+logger = logging.getLogger(__name__)
 
-_Implementations = Literal["env"]
-
-
-class OceanProtocolJobDetails(Loader[JobDetails]):
-    """Decorator that loads the JobDetails from the given implementation"""
-
-    def __init__(
-        self,
-        implementation: Optional[_Implementations] = "map",
-        mapper: Mapping[str, Any] = os.environ,
-        keys: Keys = Keys(),
-        *args,
-        **kwargs,
-    ):
-        if implementation == "map":
-            # As there are not more implementations, we can use the EnvironmentLoader directly
-            self._loader = lambda: Map(mapper=mapper, keys=keys, *args, **kwargs)
-        else:
-            raise NotImplementedError(f"Implementation {implementation} not supported")
-
-    def load(self) -> JobDetails:
-        return self._loader().load()
+T = TypeVar("T")
 
 
-del _Implementations
+class OceanProtocolJobDetails(Generic[T]):
+    """The JobDetails class is a dataclass that holds the details of the current job.
+
+    Loading it will check the following:
+    1. That the needed environment variables are set
+    1. That the ocean protocol contains the needed data based on the passed environment variables
+
+    Those needed environment variables are:
+    - DIDS: The DIDs of the inputs
+    - TRANSFORMATION_DID: The DID of the transformation algorithm
+
+    """
+
+    def __init__(self) -> None:
+        self.job_details_loader: Loader[JobDetails[T]] = JobDetailsLoader(
+            os.environ.get("DIDS"),
+            os.environ.get("TRANSFORMATION_DID"),
+        )
+
+    def load(self) -> JobDetails[T]:
+        return self.job_details_loader().load()
