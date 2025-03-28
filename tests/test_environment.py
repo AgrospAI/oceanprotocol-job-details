@@ -1,3 +1,4 @@
+import json
 from dataclasses import asdict, dataclass
 
 import pytest
@@ -36,6 +37,22 @@ def test_files() -> None:
         assert len(file.input_files) == 1, "There should be exactly one detected file"
 
 
+def test_ddo() -> None:
+    assert details.ddos
+    assert len(details.ddos) == 1, "There should be exactly one detected DDO"
+
+    with open(details.files.files[0].ddo) as ddo_file:
+        ddo = json.loads(ddo_file.read())
+        loaded_ddo = asdict(details.ddos[0])
+
+        assert ddo.keys() == loaded_ddo.keys(), (
+            "The DDO should have the same keys as the one in the file"
+        )
+        assert len(ddo.keys()) == len(loaded_ddo.keys()), (
+            "The DDO should have the same number of keys as the one in the file"
+        )
+
+
 def test_agorithm_custom_parameters() -> None:
     assert details.input_parameters is not None
     assert len(asdict(details.input_parameters).keys()) == 2
@@ -43,3 +60,6 @@ def test_agorithm_custom_parameters() -> None:
     assert details.input_parameters.isTrue is True
     assert details.input_parameters.example
     assert details.input_parameters.example == "data"
+
+
+# TODO: Test that serialized DDO == DDO file

@@ -1,0 +1,122 @@
+{
+    "id": "did:op:17feb697190d9f5912e064307006c06019c766d35e4e3f239ebb69fb71096e42",
+    "@context": [
+        "https://w3id.org/did/v1"
+    ],
+    "nftAddress": "0xFEB0237E884C7e46E5bcdD4D7D5C4163F13d5935",
+    "chainId": 32457,
+    "version": "4.1.0",
+    "metadata": {
+        "type": "algorithm",
+        "name": "SciKit-Learn Model Trainer",
+        "author": "Universitat de Lleida (UdL)",
+        "description": "## Train a **Scikit-Learn model** (sklearn) and a generic preprocessing pipeline for the input tabular data.\r\n\r\nThe input data is loaded using [**pandas**](https://pandas.pydata.org), then it's preprocessed in a generic way and the specified sklearn model is trained on it.\r\n\r\nThe algorithm requires two input parameters, the dataset parameters, to tweak the training for the selected dataset, and the model paramenters, to select the trained model and its parameters.\r\n\r\nAs of now, the possible parameters are:\r\n\r\n## dataset:\r\n- **'separator': str (default=None)** separator character used to split the CSV. \r\n- **'target_column': str** name of the dataset training column.\r\n- **'split': float[0-1] (default=0.7)** test to train split ratio. \r\n- **'random_state': int (default=42)** random seed to split the data with. \r\n- **'stratify': boolean (default=False)** to stratify the target column.\r\n\r\n## model:\r\n- **'name': str** name of the model to train, must be one of the valid *scikit-learn* models. (See below)\r\n- **'params': JSON** custom parameters for the selected *scikit-learn* model, look up *scikit-learn* docs for specifics.\r\n- **'metrics': List[str]** list of valid *scikit-learn* metrics to test the model with. (See below)\r\n\r\n## Examples\r\n\r\nFor a regression problem:\r\n\r\n```JSON\r\n{\r\n    \"name\": \"KNeighborsRegressor\",\r\n    \"params\": {\r\n        \"weights\": \"distance\"\r\n    },\r\n    \"metrics\": [\r\n        \"r2\", \r\n        \"neg_mean_squared_log_error\"\r\n        ]\r\n}\r\n```\r\n\r\nFor a classification problem:\r\n```JSON\r\n{\r\n  \"name\": \"KNeighborsClassifier\",\r\n  \"params\": {\r\n    \"metric\": \"l2\",\r\n    \"n_jobs\": -1\r\n  },\r\n  \"metrics\": [\r\n    \"balanced_accuracy\", \r\n    \"accuracy\"\r\n    ]\r\n}\r\n```\r\n\r\nDataset parameters:\r\n```JSON\r\n{\r\n  \"separator\": \",\",\r\n  \"target_column\": \"species\",\r\n  \"split\": 0.7,\r\n  \"random_state\": 42,\r\n  \"stratify\": true\r\n}\r\n```\r\n\r\n\r\n## Valid *scikit-learn* model names: (As of today)\r\n(+200 estimators), look up at [scikit-learn](https://scikit-learn.org/stable/modules/generated/sklearn.utils.discovery.all_estimators.html)\r\n...\r\n\r\n## Valid *scikit-learn* metrics: (As of today)\r\n(+50 metrics), look up at [scikit-learn](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.get_scorer_names.html)\r\n...\r\n\r\n1. **accuracy**\r\n2. **adjusted_mutual_info_score**\r\n3. **adjusted_rand_score**\r\n4. **average_precision**\r\n5. **balanced_accuracy**\r\n6. **completeness_score**\r\n7. **d2_absolute_error_score**\r\n8. **explained_variance**\r\n9. **f1**\r\n10. **f1_macro**\r\n11. **f1_micro**\r\n12. **f1_samples**\r\n13. **f1_weighted**\r\n14. **fowlkes_mallows_score**\r\n15. **homogeneity_score**\r\n16. **jaccard**\r\n17. **jaccard_macro**\r\n18. **jaccard_micro**\r\n19. **jaccard_samples**\r\n20. **jaccard_weighted**\r\n21. **matthews_corrcoef**\r\n22. **mutual_info_score**\r\n23. **neg_brier_score**\r\n24. **neg_log_loss**\r\n25. **neg_max_error**\r\n26. **neg_mean_absolute_error**\r\n27. **neg_mean_absolute_percentage_error**\r\n28. **neg_mean_gamma_deviance**\r\n29. **neg_mean_poisson_deviance**\r\n30. **neg_mean_squared_error**\r\n31. **neg_mean_squared_log_error**\r\n32. **neg_median_absolute_error**\r\n33. **neg_negative_likelihood_ratio**\r\n34. **neg_root_mean_squared_error**\r\n35. **neg_root_mean_squared_log_error**\r\n36. **normalized_mutual_info_score**\r\n37. **positive_likelihood_ratio**\r\n38. **precision**\r\n39. **precision_macro**\r\n40. **precision_micro**\r\n41. **precision_samples**\r\n42. **precision_weighted**\r\n43. **r2**\r\n44. **rand_score**\r\n45. **recall**\r\n46. **recall_macro**\r\n47. **recall_micro**\r\n48. **recall_samples**\r\n49. **recall_weighted**\r\n50. **roc_auc**\r\n51. **roc_auc_ovo**\r\n52. **roc_auc_ovo_weighted**\r\n53. **roc_auc_ovr**\r\n54. **roc_auc_ovr_weighted**\r\n55. **top_k_accuracy**\r\n56. **v_measure_score**\r\n",
+        "tags": [
+            "ml",
+            "sklearn",
+            "scikit-learn",
+            "tabular-data",
+            "pandas",
+            "udl",
+            "agrospai"
+        ],
+        "license": "MIT",
+        "algorithm": {
+            "language": "python",
+            "version": "0.3",
+            "container": {
+                "entrypoint": "python $ALGO",
+                "image": "clopezgarcia/basic-predictor",
+                "tag": "0.3",
+                "checksum": "sha256:dd85750533aba75dbc53c2c35c0e5853146afb438848524b61388d6dcd0f5d7e"
+            },
+            "consumerParameters": [
+                {
+                    "name": "dataset",
+                    "type": "text",
+                    "label": "Dataset parameters",
+                    "required": true,
+                    "description": "Dataset parameters to train the model with, such as: separator, target_column, split, random_state and stratify.",
+                    "default": "{\"separator\":\",\",\"target_column\":\"species\",\"split\":0.7,\"random_state\":42,\"stratify\":true}"
+                },
+                {
+                    "name": "model",
+                    "type": "text",
+                    "label": "Model parameters",
+                    "required": true,
+                    "description": "Model parameters to train the model with, such as: name, params and metrics.",
+                    "default": "{\"name\":\"KNeighborsClassifier\",\"params\":{\"metric\":\"l2\",\"n_jobs\":-1},\"metrics\":[\"balanced_accuracy\",\"accuracy\"]}"
+                }
+            ]
+        },
+        "created": "2025-03-12T09:16:40Z",
+        "updated": "2025-03-12T09:16:40Z"
+    },
+    "services": [
+        {
+            "id": "d0199d4f530ab2dd73f00abb82b48b5a1bb68f09452d32569b6620b259763482",
+            "datatokenAddress": "0x950Faf8c5ebd0615E89c4575ef3254E494c4f2cf",
+            "type": "compute",
+            "serviceEndpoint": "https://provider.agrospai.udl.cat",
+            "timeout": 0,
+            "files": "0x04f7c15086bbe4091f38c2c516c2bbf10e6fe8d8f1ad180f4120ae8fcddc7c25ddcaddfe7b022c2968304e6b65f19614540777381cf5cde1bdee0c61bed5963493a20ddb210034fb784032e25632615f0ff5c6f9080909ce448792be76410d8fc5613c3a335a7daecabf6155a7b05d76a16e200ebbf8a5ed5233dcac57e7793c82d502656a272a49623ccf4eb35bea45ab0051282cd8e08176973d18cc997347563037b5731d89a0f8cd0f0259bad8f6a7788bc82af2d515ea13f093292dec1782c757102c9b3d6bc54458988f75a0b511446f4f9efd4004c309b634e483615cc6700e6e221b03c3d7426e5656099398bfcf12689e75627e5cbfbe5ac3793003bf59a152f3171b3484d1299ce3485b267a80346bd356846a8f5c7b417ce13bd0c9a8c6641769722da8e4908e6bae7ebf0d8944b7d54d4486fa8a9f3564ad2df9de7a834a261e4b926b1303729f74a96c6125c59543c262b942101fcc1d2088a20ae1c7e12d8ba64923f3e7276c801fa353771f1045dc9c85",
+            "compute": {
+                "allowNetworkAccess": false,
+                "allowRawAlgorithm": false,
+                "publisherTrustedAlgorithmPublishers": [],
+                "publisherTrustedAlgorithms": []
+            }
+        }
+    ],
+    "credentials": {
+        "allow": [],
+        "deny": []
+    },
+    "event": {
+        "tx": "0xd906700ee1bfc5675ff222a0a429fde38822dd3b1adeabebdf06907cba5fc074",
+        "block": 4356613,
+        "from": "0xD999bAaE98AC5246568FD726be8832c49626867D",
+        "contract": "0xFEB0237E884C7e46E5bcdD4D7D5C4163F13d5935",
+        "datetime": "2025-03-12T09:16:44"
+    },
+    "nft": {
+        "address": "0xFEB0237E884C7e46E5bcdD4D7D5C4163F13d5935",
+        "name": "UdL scikit-learn model trainer",
+        "symbol": "UDL-SKLEARN",
+        "state": 0,
+        "tokenURI": "https://scikit-learn.org/stable/_static/scikit-learn-logo-small.png",
+        "owner": "0xD999bAaE98AC5246568FD726be8832c49626867D",
+        "created": "2025-03-12T09:16:44"
+    },
+    "datatokens": [
+        {
+            "address": "0x950Faf8c5ebd0615E89c4575ef3254E494c4f2cf",
+            "name": "UdL scikit-learn model trainer",
+            "symbol": "UDL-SKLEARN",
+            "serviceId": "d0199d4f530ab2dd73f00abb82b48b5a1bb68f09452d32569b6620b259763482"
+        }
+    ],
+    "stats": {
+        "allocated": 0,
+        "orders": 2,
+        "price": {
+            "value": 0
+        }
+    },
+    "purgatory": {
+        "state": false
+    },
+    "accessDetails": {
+        "templateId": 2,
+        "publisherMarketOrderFee": "0",
+        "type": "free",
+        "addressOrId": "0x950faf8c5ebd0615e89c4575ef3254e494c4f2cf",
+        "price": "0",
+        "isPurchasable": true,
+        "datatoken": {
+            "address": "0x950faf8c5ebd0615e89c4575ef3254e494c4f2cf",
+            "name": "UdL scikit-learn model trainer",
+            "symbol": "UDL-SKLEARN"
+        }
+    }
+}

@@ -1,5 +1,5 @@
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Generic, Type, TypeVar, final
 
 from oceanprotocol_job_details.loaders.impl.ddo import DDOLoader
@@ -12,7 +12,7 @@ T = TypeVar("T")
 @final
 @dataclass(frozen=True)
 class JobDetailsLoader(Generic[T]):
-    _type: Type[T]
+    _type: Type[T] = field(repr=False)
 
     def load(self) -> JobDetails[T]:
         dids = os.environ.get("DIDS")

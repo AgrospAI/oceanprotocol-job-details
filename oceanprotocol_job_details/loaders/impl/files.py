@@ -2,7 +2,7 @@ from dataclasses import InitVar, dataclass, field
 from pathlib import Path
 from typing import Iterator, Sequence, final
 
-import orjson
+import json
 
 from oceanprotocol_job_details.config import config
 
@@ -53,7 +53,7 @@ class FilesLoader:
         assert dids, "Missing DIDs"
         assert transformation_did, "Missing transformation DID"
 
-        object.__setattr__(self, "_dids", orjson.loads(dids))
+        object.__setattr__(self, "_dids", json.loads(dids))
         object.__setattr__(self, "_transformation_did", transformation_did)
 
     def load(self) -> Files:

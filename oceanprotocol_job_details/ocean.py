@@ -1,108 +1,125 @@
 from dataclasses import dataclass, field
-from datetime import datetime
 from functools import cached_property
-from typing import Generic, Type, TypeVar, final
+from typing import Generic, Optional, Type, TypeVar, final
 
-from pydantic import BaseModel, Field, HttpUrl
+from dataclasses_json import config as dc_config
+from dataclasses_json import dataclass_json
 
 from oceanprotocol_job_details.config import config
 from oceanprotocol_job_details.loaders.impl.files import Files
-from oceanprotocol_job_details.utils import load_dataclass
-
 
 T = TypeVar("T")
 
 
-class Credential(BaseModel):  # type: ignore
+@dataclass_json
+@dataclass
+class Credential:
     type: str
     values: list[str]
 
 
-class Credentials(BaseModel):  # type: ignore
+@dataclass_json
+@dataclass
+class Credentials:
     allow: list[Credential]
     deny: list[Credential]
 
 
-class Metadata(BaseModel):  # type: ignore
+@dataclass_json
+@dataclass
+class Metadata:
     description: str
     name: str
     type: str
     author: str
     license: str
+    algorithm: Optional[str] = None  # TODO: Add Algorithm class
+    tags: Optional[list[str]] = None
+    created: Optional[str] = None
+    updated: Optional[str] = None
+    copyrightHolder: Optional[str] = None
+    links: Optional[list[str]] = None
+    contentLanguage: Optional[str] = None
+    categories: Optional[list[str]] = None
 
-    algorithm: str  # TODO: Add Algorithm class
-    tags: list[str] | None = None
-    created: datetime | None = None
-    updated: datetime | None = None
-    copyrightHolder: str | None = None
-    links: list[HttpUrl] | None = None
-    contentLanguage: str | None = None
-    categories: list[str] | None = None
 
-
-class ConsumerParameters(BaseModel):  # type: ignore
+@dataclass_json
+@dataclass
+class ConsumerParameters:
+    # TODO: Inside Algorithm class
     name: str
     type: str
     label: str
     required: bool
     description: str
     default: str
+    option: Optional[list[str]] = None
 
-    option: list[str] | None = None
 
-
-class Service(BaseModel):  # type: ignore
+@dataclass_json
+@dataclass
+class Service:
     id: str
     type: str
     timeout: int
     files: str
     datatokenAddress: str
-    serviceEndpoint: HttpUrl
-
-    consumerParameters: ConsumerParameters
-    additionalInformation: str
-    name: str | None = None
-    description: str | None = None
+    serviceEndpoint: str
+    additionalInformation: Optional[str] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
 
 
-class Event(BaseModel):  # type: ignore
+@dataclass_json
+@dataclass
+class Event:
     tx: str
     block: int
-    from_: str = Field(alias="from")
+    from_: str = field(metadata=dc_config(field_name="from"))
     contract: str
-    datetime: datetime
+    datetime: str
 
 
-class NFT(BaseModel):  # type: ignore
+@dataclass_json
+@dataclass
+class NFT:
     address: str
     name: str
     symbol: str
     state: int
-    tokenURI: HttpUrl
+    tokenURI: str
     owner: str
-    created: datetime
+    created: str
 
 
-class DataToken(BaseModel):  # type: ignore
+@dataclass_json
+@dataclass
+class DataToken:
     address: str
     name: str
     symbol: str
-    serviceId: datetime
+    serviceId: str
 
 
-class Price(BaseModel):  # type: ignore
+@dataclass_json
+@dataclass
+class Price:
     value: int
 
 
-class Stats(BaseModel):  # type: ignore
+@dataclass_json
+@dataclass
+class Stats:
     allocated: int
     orders: int
     price: Price
 
 
-class DDO(BaseModel):  # type: ignore
+@dataclass_json
+@dataclass
+class DDO:
     id: str
-    context: list[str] = Field(alias="@context")
+    context: list[str] = field(metadata=dc_config(field_name="@context"))
     nftAddress: str
     chainId: int
     version: str
@@ -116,13 +133,14 @@ class DDO(BaseModel):  # type: ignore
 
 
 @final
+@dataclass_json
 @dataclass(frozen=True)
 class JobDetails(Generic[T]):
     files: Files
     """The input filepaths"""
 
     ddos: list[DDO]
-    """List of paths to the DDOs"""
+    """list of paths to the DDOs"""
 
     # Store the type explicitly to avoid issues
     _type: Type[T] = field(repr=False)
@@ -131,13 +149,12 @@ class JobDetails(Generic[T]):
     """Shh it's a secret"""
 
     def __post_init__(self) -> None:
-        # Ensure '_type' is set correctly
-
         if not hasattr(self._type, "__dataclass_fields__"):
             raise TypeError(f"{self._type} is not a dataclass type")
 
     @cached_property
     def input_parameters(self) -> T:
         """Read the input parameters and return them in an instance of the dataclass T"""
+
         with open(config.path_algorithm_custom_parameters, "r") as f:
-            return load_dataclass(f.read(), self._type)
+            return dataclass_json(self._type).from_json(f.read())  # type: ignore

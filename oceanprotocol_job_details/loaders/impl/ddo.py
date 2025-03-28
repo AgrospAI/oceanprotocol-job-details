@@ -2,10 +2,7 @@ from dataclasses import InitVar, dataclass, field
 from pathlib import Path
 from typing import final
 
-import orjson
-
 from oceanprotocol_job_details.ocean import DDO
-from oceanprotocol_job_details.utils import pydantic_to_dataclass
 
 
 @final
@@ -25,6 +22,5 @@ class DDOLoader:
         ddos = []
         for path in self._ddo_paths:
             with open(path, "r") as f:
-                data = orjson.loads(f.read())
-                ddos.append(pydantic_to_dataclass(DDO, data))
+                ddos.append(DDO.from_json(f.read()))  # type: ignore
         return ddos

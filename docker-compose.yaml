@@ -9,6 +9,6 @@ services:
     environment:
       DEV: 1
       TEST: 1
-      DIDS: '["eb60f87363a36a5ae5cb8373524a8fd976b0cc5f8c40a706c615b857ae0e2974"]'
+      DIDS: '["17feb697190d9f5912e064307006c06019c766d35e4e3f239ebb69fb71096e42"]'
       secret: "a super super secret"
       TRANSFORMATION_DID: "1234567890"
