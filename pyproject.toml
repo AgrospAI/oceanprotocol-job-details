@@ -13,16 +13,14 @@ classifiers = [
     "Operating System :: OS Independent",
     "License :: OSI Approved :: MIT License",
 ]
-dependencies = [
-    "mypy>=1.15.0",
-    "orjson>=3.10.15",
-    "pydantic>=2.10.6",
-    "pytest>=8.3.4,<9",
-]
+dependencies = ["orjson>=3.10.15", "pydantic>=2.10.6"]
 
 [project.urls]
 Homepage = "https://github.com/AgrospAI/oceanprotocol-job-details"
 Issues = "https://github.com/AgrospAI/oceanprotocol-job-details/issues"
+
+[tool.pytest.ini_options]
+pythonpath = "oceanprotocol_job_details"
 
 [build-system]
 requires = ["hatchling"]
@@ -38,3 +36,6 @@ include = ["oceanprotocol_job_details"]
 strict = true
 warn_return_any = true
 disallow_any_explicit = true
+
+[dependency-groups]
+dev = ["mypy>=1.15.0", "pytest>=8.3.4"]

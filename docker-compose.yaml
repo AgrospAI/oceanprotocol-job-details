@@ -3,16 +3,12 @@ services:
   algorithm:
     build: .
     volumes:
-      - ./_data/inputs:/data/inputs:ro
-      - ./_data/ddos:/data/ddos:ro
-      - ./_data/outputs:/data/outputs:rw
-      - ./_data/logs:/data/logs:rw
-      - ./algorithm/src:/algorithm/src/
-      - ./algorithm/tests:/algorithm/tests/
-      - ./entrypoint.sh:/algorithm/entrypoint.sh
+      - ./_data:/data:rw
+      - ./oceanprotocol_job_details:/oceanprotocol_job_details/oceanprotocol_job_details:rw
+      - ./tests:/oceanprotocol_job_details/tests:ro
     environment:
       DEV: 1
       TEST: 1
       DIDS: '["timeseries-example"]'
-      secret: "a secret"
+      secret: "a super super secret"
       TRANSFORMATION_DID: "1234567890"

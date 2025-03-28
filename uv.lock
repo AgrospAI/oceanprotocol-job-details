@@ -90,18 +90,26 @@ name = "oceanprotocol-job-details"
 version = "0.0.12"
 source = { editable = "." }
 dependencies = [
-    { name = "mypy" },
     { name = "orjson" },
     { name = "pydantic" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "mypy" },
     { name = "pytest" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "mypy", specifier = ">=1.15.0" },
     { name = "orjson", specifier = ">=3.10.15" },
     { name = "pydantic", specifier = ">=2.10.6" },
-    { name = "pytest", specifier = ">=8.3.4,<9" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "mypy", specifier = ">=1.15.0" },
+    { name = "pytest", specifier = ">=8.3.4" },
 ]
 
 [[package]]
