@@ -1,5 +1,4 @@
 from dataclasses import asdict, dataclass
-import os
 
 import pytest
 
@@ -9,6 +8,7 @@ from oceanprotocol_job_details.ocean import JobDetails
 
 @dataclass(frozen=True)
 class CustomParameters:
+    example: str
     isTrue: bool
 
 
@@ -17,17 +17,9 @@ details: JobDetails[CustomParameters]
 
 @pytest.fixture(scope="session", autouse=True)
 def setup():  # type: ignore
-
-    env = os.environ
-    env["DIDS"] = (
-        ' [ "eb60f87363a36a5ae5cb8373524a8fd976b0cc5f8c40a706c615b857ae0e2974" ]'
-    )
-    env["TRANSFORMATION_DID"] = "6EDaE15f7314dC306BB6C382517D374356E6B9De"
-    env["SECRET"] = "MOCK-SECRET"
-
     global details
 
-    details = OceanProtocolJobDetails().load()
+    details = OceanProtocolJobDetails(CustomParameters).load()
 
     yield
 
@@ -49,3 +41,5 @@ def test_agorithm_custom_parameters() -> None:
     assert len(asdict(details.input_parameters).keys()) == 2
     assert details.input_parameters.isTrue
     assert details.input_parameters.isTrue is True
+    assert details.input_parameters.example
+    assert details.input_parameters.example == "data"

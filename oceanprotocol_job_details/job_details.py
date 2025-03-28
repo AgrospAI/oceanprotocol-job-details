@@ -1,6 +1,5 @@
 import logging
-import os
-from typing import Generic, TypeVar
+from typing import Generic, Type, TypeVar
 
 from oceanprotocol_job_details.loaders.impl.job_details import JobDetailsLoader
 from oceanprotocol_job_details.loaders.loader import Loader
@@ -30,11 +29,8 @@ class OceanProtocolJobDetails(Generic[T]):
 
     """
 
-    def __init__(self) -> None:
-        self.job_details_loader: Loader[JobDetails[T]] = JobDetailsLoader(
-            os.environ.get("DIDS"),
-            os.environ.get("TRANSFORMATION_DID"),
-        )
+    def __init__(self, _type: Type[T]) -> None:
+        self.job_details_loader: Loader[JobDetails[T]] = JobDetailsLoader(_type)
 
     def load(self) -> JobDetails[T]:
-        return self.job_details_loader().load()  # type:  ignore
+        return self.job_details_loader.load()

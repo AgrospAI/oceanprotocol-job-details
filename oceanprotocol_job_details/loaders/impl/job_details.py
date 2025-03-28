@@ -1,6 +1,6 @@
 import os
 from dataclasses import dataclass
-from typing import Generic, TypeVar, final
+from typing import Generic, Type, TypeVar, final
 
 from oceanprotocol_job_details.loaders.impl.ddo import DDOLoader
 from oceanprotocol_job_details.loaders.impl.files import FilesLoader
@@ -12,21 +12,14 @@ T = TypeVar("T")
 @final
 @dataclass(frozen=True)
 class JobDetailsLoader(Generic[T]):
-
-    dids: str | None
-    """Input DIDs"""
-
-    transformation_did: str | None
-    """DID for the transformation algorithm"""
-
-    def __post_init__(self) -> None:
-        assert "SECRET" in os.environ, "Missing SECRET environment variable"
+    _type: Type[T]
 
     def load(self) -> JobDetails[T]:
-        files = FilesLoader(self.dids, self.transformation_did).load()
+        dids = os.environ.get("DIDS")
+        transformation_did = os.environ.get("TRANSFORMATION_DID")
+        secret = os.environ.get("SECRET")
+
+        files = FilesLoader(dids, transformation_did).load()
         ddos = DDOLoader([f.ddo for f in files]).load()
 
-        return JobDetails(
-            files,
-            os.environ.get("SECRET"),
-        )
+        return JobDetails(files=files, secret=secret, ddos=ddos, _type=self._type)
