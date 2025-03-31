@@ -16,23 +16,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.10-alpine", "3.11-alpine", "3.12-alpine", "3.13-alpine"]
 
     steps:
     - uses: actions/checkout@v4
     
-    - name: Set up uv
-      uses: astral-sh/setup-uv@v5
+    - name: Run docker compose
+      uses: hoverkraft-tech/compose-action@v2.0.1
       with:
-        version: "0.6.4"
-
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-
-    - name: Install dependencies
-      run: uv sync
-    
-    - name: Test with pytest
-      run: uv run pytest
+        compose-file: "./docker-compose.yaml"
+        up-flags: "--build"
+      env:
+        PYTHON_VERSION: ${{ matrix.python-version }}
