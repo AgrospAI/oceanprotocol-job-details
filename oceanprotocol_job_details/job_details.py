@@ -1,5 +1,8 @@
 import logging
+from dataclasses import dataclass
 from typing import Generic, Type, TypeVar
+
+from dataclasses_json import dataclass_json
 
 from oceanprotocol_job_details.loaders.impl.job_details import JobDetailsLoader
 from oceanprotocol_job_details.loaders.loader import Loader
@@ -11,6 +14,12 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()],
 )
 logger = logging.getLogger(__name__)
+
+
+@dataclass_json
+@dataclass
+class _EmptyJobDetails: ...
+
 
 T = TypeVar("T")
 
@@ -29,8 +38,10 @@ class OceanProtocolJobDetails(Generic[T]):
 
     """
 
-    def __init__(self, _type: Type[T]) -> None:
-        self.job_details_loader: Loader[JobDetails[T]] = JobDetailsLoader(_type)
+    def __init__(self, _type: Type[T] | None = None) -> None:
+        if _type is None:
+            _type = _EmptyJobDetails  # type: ignore[assignment]
+        self.job_details_loader: Loader[JobDetails[T]] = JobDetailsLoader(_type)  # type: ignore[arg-type]
 
     def load(self) -> JobDetails[T]:
         return self.job_details_loader.load()

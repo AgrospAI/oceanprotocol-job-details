@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from functools import cached_property
-from typing import Generic, Optional, Type, TypeVar, final
+from typing import Any, Generic, Optional, Type, TypeVar, final
 
 from dataclasses_json import config as dc_config
 from dataclasses_json import dataclass_json
@@ -27,13 +27,30 @@ class Credentials:
 
 @dataclass_json
 @dataclass
+class Container:
+    image: str
+    tag: str
+    entrypoint: str
+
+
+@dataclass_json
+@dataclass
+class Algorithm:  # type: ignore
+    container: Container
+    language: str
+    version: str
+    consumerParameters: Any  # type: ignore
+
+
+@dataclass_json
+@dataclass
 class Metadata:
     description: str
     name: str
     type: str
     author: str
     license: str
-    algorithm: Optional[str] = None  # TODO: Add Algorithm class
+    algorithm: Optional[Algorithm] = None
     tags: Optional[list[str]] = None
     created: Optional[str] = None
     updated: Optional[str] = None
@@ -46,7 +63,6 @@ class Metadata:
 @dataclass_json
 @dataclass
 class ConsumerParameters:
-    # TODO: Inside Algorithm class
     name: str
     type: str
     label: str

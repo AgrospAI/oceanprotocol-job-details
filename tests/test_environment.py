@@ -57,4 +57,8 @@ def test_agorithm_custom_parameters() -> None:
     assert details.input_parameters.example == "data"
 
 
-# TODO: Test that serialized DDO == DDO file
+def test_empty_custom_parameters() -> None:
+    empty_details = OceanProtocolJobDetails().load()  # type: ignore
+    assert len(empty_details.input_parameters.to_dict().keys()) == 0, (
+        "There should be no input parameters"
+    )
