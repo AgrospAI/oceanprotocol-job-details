@@ -30,10 +30,21 @@ jobs:
       - name: Set up Python
         run: uv python install
 
-      - name: Install dependencies, run tests and build distribution
+      - name: Install dependencies
         run: |
           uv sync
           uv run pytest
+          uv build
+
+      - name: Run tests (docker-compose)
+        uses: hoverkraft-tech/compose-action@v2.0.1
+        with:
+          compose-file: "./docker-compose.yaml"
+          up-flags: "--build"
+
+      - name: Make build
+        run: |
+          uv sync
           uv build
 
       - name: pypi-publish
