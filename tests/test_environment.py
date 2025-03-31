@@ -43,14 +43,9 @@ def test_ddo() -> None:
 
     with open(details.files.files[0].ddo) as ddo_file:
         ddo = json.loads(ddo_file.read())
-        loaded_ddo = asdict(details.ddos[0])
+        loaded_ddo = details.ddos[0].to_dict()  # type: ignore
 
-        assert ddo.keys() == loaded_ddo.keys(), (
-            "The DDO should have the same keys as the one in the file"
-        )
-        assert len(ddo.keys()) == len(loaded_ddo.keys()), (
-            "The DDO should have the same number of keys as the one in the file"
-        )
+        assert ddo.keys() == loaded_ddo.keys(), "DDO keys mismatch. "
 
 
 def test_agorithm_custom_parameters() -> None:

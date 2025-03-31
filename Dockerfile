@@ -17,4 +17,4 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 # Check if running dev & tests
-CMD ["pytest"]
+CMD ["pytest", "-v"]

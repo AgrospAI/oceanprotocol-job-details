@@ -103,6 +103,14 @@ class DataToken:
 
 @dataclass_json
 @dataclass
+class SimpleDataToken:
+    address: str
+    name: str
+    symbol: str
+
+
+@dataclass_json
+@dataclass
 class Price:
     value: int
 
@@ -113,6 +121,24 @@ class Stats:
     allocated: int
     orders: int
     price: Price
+
+
+@dataclass_json
+@dataclass
+class Purgatory:
+    state: bool
+
+
+@dataclass_json
+@dataclass
+class AccessDetails:
+    templateId: int
+    publisherMarketOrderFee: str
+    type: str
+    addressOrId: str
+    price: str
+    isPurchasable: bool
+    datatoken: SimpleDataToken
 
 
 @dataclass_json
@@ -130,6 +156,8 @@ class DDO:
     nft: NFT
     datatokens: list[DataToken]
     stats: Stats
+    purgatory: Purgatory
+    accessDetails: AccessDetails
 
 
 @final
