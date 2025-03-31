@@ -1,34 +1,26 @@
-from pathlib import Path
+import json
+from dataclasses import asdict, dataclass
 
 import pytest
 
-from oceanprotocol_job_details.dataclasses.job_details import JobDetails
-from oceanprotocol_job_details.dataclasses.constants import Paths
 from oceanprotocol_job_details.job_details import OceanProtocolJobDetails
-from oceanprotocol_job_details.loaders.impl.map import Keys
+from oceanprotocol_job_details.ocean import JobDetails
 
 
-details: JobDetails = None
+@dataclass(frozen=True)
+class CustomParameters:
+    example: str
+    isTrue: bool
+
+
+details: JobDetails[CustomParameters]
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup():
-    keys = Keys()
-
-    fake_env = {
-        keys.ROOT_FOLDER: Path(__file__).parent.absolute(),
-        keys.DIDS: ' [ "eb60f87363a36a5ae5cb8373524a8fd976b0cc5f8c40a706c615b857ae0e2974" ]',
-        keys.ALGORITHM: "6EDaE15f7314dC306BB6C382517D374356E6B9De",
-        keys.SECRET: "MOCK-SECRET",
-    }
-
+def setup():  # type: ignore
     global details
 
-    details = OceanProtocolJobDetails(
-        implementation="map",
-        mapper=fake_env,
-        keys=keys,
-    ).load()
+    details = OceanProtocolJobDetails(CustomParameters).load()
 
     yield
 
@@ -36,23 +28,33 @@ def setup():
     print("Ending session")
 
 
-def test_files_exists():
+def test_files() -> None:
     assert details.files, "There should be detected files"
+    assert len(details.files) == 1, "There should be exactly one detected file"
+    for file in details.files:
+        assert file.ddo, "There should be a DDO file"
+        assert file.input_files
+        assert len(file.input_files) == 1, "There should be exactly one detected file"
 
 
-def test_files_len_eq_one():
-    assert len(details.files.keys()) == 1, "There should be exactly one detected file"
+def test_ddo() -> None:
+    assert details.ddos
+    assert len(details.ddos) == 1, "There should be exactly one detected DDO"
+
+    with open(details.files.files[0].ddo) as ddo_file:
+        ddo = json.loads(ddo_file.read())
+        loaded_ddo = details.ddos[0].to_dict()  # type: ignore
+
+        assert ddo.keys() == loaded_ddo.keys(), "DDO keys mismatch. "
 
 
-def test_algorithm_exists():
-    assert details.algorithm, "There should be an input algorithm"
+def test_agorithm_custom_parameters() -> None:
+    assert details.input_parameters is not None
+    assert len(asdict(details.input_parameters).keys()) == 2
+    assert details.input_parameters.isTrue
+    assert details.input_parameters.isTrue is True
+    assert details.input_parameters.example
+    assert details.input_parameters.example == "data"
 
 
-def test_algorithm_ddo():
-    assert details.algorithm.ddo == Paths.DDOS / details.algorithm.did
-
-
-def test_custom_parameters():
-    assert details.parameters is not None
-    assert len(details.parameters.keys()) == 2
-    assert details.parameters["isTrue"] is True
+# TODO: Test that serialized DDO == DDO file
