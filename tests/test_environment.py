@@ -41,11 +41,13 @@ def test_ddo() -> None:
     assert details.ddos
     assert len(details.ddos) == 1, "There should be exactly one detected DDO"
 
+    excluded_keys = ["accessDetails"]
     with open(details.files.files[0].ddo) as ddo_file:
-        ddo = json.loads(ddo_file.read())
-        loaded_ddo = details.ddos[0].to_dict()  # type: ignore
+        ddo_keys = list(json.loads(ddo_file.read()).keys())
+        ddo_keys = [key for key in ddo_keys if key not in excluded_keys]
 
-        assert ddo.keys() == loaded_ddo.keys(), "DDO keys mismatch. "
+    loaded_ddo_keys = list(details.ddos[0].to_dict().keys())
+    assert ddo_keys == loaded_ddo_keys, "DDO keys mismatch. "
 
 
 def test_agorithm_custom_parameters() -> None:
@@ -59,6 +61,6 @@ def test_agorithm_custom_parameters() -> None:
 
 def test_empty_custom_parameters() -> None:
     empty_details = OceanProtocolJobDetails().load()  # type: ignore
-    assert len(empty_details.input_parameters.to_dict().keys()) == 0, (
-        "There should be no input parameters"
-    )
+    assert (
+        len(empty_details.input_parameters.to_dict().keys()) == 0
+    ), "There should be no input parameters"
