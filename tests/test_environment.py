@@ -36,6 +36,8 @@ def test_files() -> None:
         assert file.input_files
         assert len(file.input_files) == 1, "There should be exactly one detected file"
 
+    assert details.files[0], "Can't access files by index"
+
 
 def test_ddo() -> None:
     assert details.ddos
