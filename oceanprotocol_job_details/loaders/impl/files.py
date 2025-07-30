@@ -1,8 +1,7 @@
+import json
 from dataclasses import InitVar, dataclass, field
 from pathlib import Path
 from typing import Iterator, Sequence, final
-
-import json
 
 from oceanprotocol_job_details.config import config
 
@@ -24,7 +23,14 @@ class DIDPaths:
 
 @dataclass(frozen=True)
 class Files:
-    files: Sequence[DIDPaths]
+    _files: Sequence[DIDPaths]
+
+    @property
+    def files(self) -> Sequence[DIDPaths]:
+        return self._files
+
+    def __getitem__(self, index: int) -> DIDPaths:
+        return self.files[index]
 
     def __iter__(self) -> Iterator[DIDPaths]:
         return iter(self.files)
