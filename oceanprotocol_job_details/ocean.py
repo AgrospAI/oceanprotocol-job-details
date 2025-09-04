@@ -180,4 +180,15 @@ class JobDetails(Generic[T]):
         """Read the input parameters and return them in an instance of the dataclass T"""
 
         with open(config.path_algorithm_custom_parameters, "r") as f:
-            return dataclass_json(self._type).from_json(f.read())  # type: ignore
+            raw = f.read().strip()
+            if not raw:
+                raise ValueError(
+                    f"Custom parameters file {config.path_algorithm_custom_parameters} is empty"
+                )
+            try:
+                return dataclass_json(self._type).from_json(raw)  # type: ignore
+            except Exception as e:
+                raise ValueError(
+                    f"Failed to parse input paramers into {self._type.__name__}: {e}\n"
+                    f"Raw content: {raw}"
+                ) from e
