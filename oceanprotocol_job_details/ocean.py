@@ -2,6 +2,8 @@ from dataclasses import dataclass, field
 from functools import cached_property
 from typing import Any, Generic, Optional, Type, TypeVar, final
 
+import orjson
+
 from dataclasses_json import config as dc_config
 from dataclasses_json import dataclass_json
 
@@ -155,6 +157,20 @@ class DDO:
     purgatory: Purgatory
 
 
+def _normalize_json(value):
+    if isinstance(value, str):
+        try:
+            decoded = orjson.loads(value)
+            return _normalize_json(decoded)  # recurse if nested again
+        except orjson.JSONDecodeError:
+            return value
+    elif isinstance(value, dict):
+        return {k: _normalize_json(v) for k, v in value.items()}
+    elif isinstance(value, list):
+        return [_normalize_json(v) for v in value]
+    return value
+
+
 @final
 @dataclass_json
 @dataclass(frozen=True)
@@ -186,7 +202,8 @@ class JobDetails(Generic[T]):
                     f"Custom parameters file {config.path_algorithm_custom_parameters} is empty"
                 )
             try:
-                return dataclass_json(self._type).from_json(raw)  # type: ignore
+                parsed = _normalize_json(orjson.loads(raw))
+                return dataclass_json(self._type).from_dict(parsed)  # type: ignore
             except Exception as e:
                 raise ValueError(
                     f"Failed to parse input paramers into {self._type.__name__}: {e}\n"
