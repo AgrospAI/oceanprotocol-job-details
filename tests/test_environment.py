@@ -1,5 +1,6 @@
 import json
 from dataclasses import asdict, dataclass
+from pathlib import Path
 
 import pytest
 
@@ -52,7 +53,7 @@ def test_ddo() -> None:
     assert ddo_keys == loaded_ddo_keys, "DDO keys mismatch. "
 
 
-def test_agorithm_custom_parameters() -> None:
+def test_algorithm_custom_parameters() -> None:
     assert details.input_parameters is not None
     assert len(asdict(details.input_parameters).keys()) == 2
     assert details.input_parameters.isTrue
@@ -66,3 +67,25 @@ def test_empty_custom_parameters() -> None:
     assert (
         len(empty_details.input_parameters.to_dict().keys()) == 0
     ), "There should be no input parameters"
+
+
+def test_stringified_dict_custom_parameters() -> None:
+    # create a temporary parameters file with stringified JSON
+    from oceanprotocol_job_details.config import config
+
+    params_file = config.path_algorithm_custom_parameters
+    params_file.write_text(
+        json.dumps(
+            {
+                "example": json.dumps("data"),  # stringified primitive
+                "isTrue": json.dumps(True),  # stringified boolean
+            }
+        )
+    )
+
+    # Load JobDetails with this custom parameters file
+    details = OceanProtocolJobDetails(CustomParameters).load()
+
+    # The stringified JSON should be parsed back into the correct types
+    assert details.input_parameters.example == "data"
+    assert details.input_parameters.isTrue is True
