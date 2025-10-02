@@ -13,6 +13,7 @@ T = TypeVar("T")
 @dataclass(frozen=True)
 class JobDetailsLoader(Generic[T]):
     _type: Type[T] = field(repr=False)
+    
 
     def load(self) -> JobDetails[T]:
         dids = os.environ.get("DIDS")
