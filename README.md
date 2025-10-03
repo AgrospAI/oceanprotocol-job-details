@@ -13,10 +13,10 @@ pip install oceanprotocol-job-details
 As a simple library, we only need to import the main object and use it once:
 
 ```Python
-from oceanprotocol_job_details.job_details import OceanProtocolJobDetails
+from oceanprotocol_job_details import JobDetails
 
 # Having no algorithm input parameters
-job_details = OceanProtocolJobDetails().load()  # type: ignore
+job_details = JobDetails.load()
 
 ```
 
@@ -25,15 +25,16 @@ If our algorithm has custom input parameters and we want to load them into our a
 ```Python
 
 from dataclasses import dataclass
-from oceanprotocol_job_details.job_details import OceanProtocolJobDetails
-from oceanprotocol_job_details.ocean import JobDetails
+from oceanprotocol_job_details import JobDetails
+
 
 @dataclass
-class Input:
+class InputParameters:
     name: str
     age: int
 
-job_details: JobDetails[Input] = OceanProtocolJobDetails(Input).load()
+
+job_details: JobDetails[InputParameters] = JobDetails.load(InputParameters)
 
 # Usage (is type hinted)
 job_details.input_parameters.name
@@ -41,20 +42,11 @@ job_details.input_parameters.age
 
 ```
 
-Assumes the following directory structure:
-```
-<ROOT_FOLDER>
-└───data
-    ├───ddos
-    ├───transformation
-    ├───inputs
-    └───logs
-```
+Assumes the directory structure of OceanProtocol algorithms.
 
 ### Core functionalities
 
-Given the Ocean Protocol job details structure as in [https://github.com/GX4FM-Base-X/pontus-x-ontology](Pontus-X Ontology), parses the passed algorithm parameters into an object to use in your algorithms.
+Given the Ocean Protocol job details structure, parses the passed algorithm parameters into an object to use in your algorithms.
 
-1. Parsing JSON
-1. Validation
-1. Metadata and service extraction
+1. Input parameter JSON parsing and validation
+1. Metadata and service extraction from the directory structure.
