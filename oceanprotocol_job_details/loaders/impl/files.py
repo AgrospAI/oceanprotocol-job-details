@@ -1,52 +1,27 @@
+from __future__ import annotations
+
 import json
 from dataclasses import InitVar, dataclass, field
-from pathlib import Path
-from typing import Iterator, Sequence, final
+from typing import TYPE_CHECKING, Sequence, final
 
-from oceanprotocol_job_details.config import config
+from oceanprotocol_job_details.paths import Paths
 
-
-@dataclass(frozen=True)
-class DIDPaths:
-    did: str
-    ddo: Path
-    input_files: Sequence[Path]
-
-    def __post_init__(self) -> None:
-        assert self.ddo.exists(), f"DDO {self.ddo} does not exist"
-        for input_file in self.input_files:
-            assert input_file.exists(), f"File {input_file} does not exist"
-
-    def __len__(self) -> int:
-        return len(self.input_files)
-
-
-@dataclass(frozen=True)
-class Files:
-    _files: Sequence[DIDPaths]
-
-    @property
-    def files(self) -> Sequence[DIDPaths]:
-        return self._files
-
-    def __getitem__(self, index: int) -> DIDPaths:
-        return self.files[index]
-
-    def __iter__(self) -> Iterator[DIDPaths]:
-        return iter(self.files)
-
-    def __len__(self) -> int:
-        return len(self.files)
+if TYPE_CHECKING:
+    from oceanprotocol_job_details.ocean import DIDPaths, Files
 
 
 @final
 @dataclass(frozen=True)
 class FilesLoader:
+
     dids: InitVar[str | None]
     """Input DIDs"""
 
     transformation_did: InitVar[str | None]
     """DID for the transformation algorithm"""
+
+    paths: Paths
+    """Path configurations of the project"""
 
     _dids: Sequence[str] = field(init=False)
     _transformation_did: str = field(init=False)
@@ -63,13 +38,15 @@ class FilesLoader:
         object.__setattr__(self, "_transformation_did", transformation_did)
 
     def load(self) -> Files:
+        from oceanprotocol_job_details.ocean import DIDPaths, Files
+
         files: list[DIDPaths] = []
         for did in self._dids:
-            base = Path(config.path_inputs) / did
+            base = self.paths.inputs / did
             files.append(
                 DIDPaths(
                     did=did,
-                    ddo=Path(config.path_ddos) / did,
+                    ddo=self.paths.ddos / did,
                     input_files=list(base.iterdir()),
                 )
             )

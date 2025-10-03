@@ -1,6 +1,6 @@
 [project]
 name = "oceanprotocol-job-details"
-version = "0.1.5"
+version = "0.2.0"
 description = "A Python package to get details from OceanProtocol jobs"
 authors = [
     { name = "Christian López García", email = "christian.lopez@udl.cat" },
@@ -13,7 +13,11 @@ classifiers = [
     "Operating System :: OS Independent",
     "License :: OSI Approved :: MIT License",
 ]
-dependencies = ["dataclasses-json>=0.6.7", "orjson>=3.11.3"]
+dependencies = [
+    "dataclasses-json>=0.6.7",
+    "dependency-injector>=4.48.2",
+    "orjson>=3.11.3",
+]
 
 [project.urls]
 Homepage = "https://github.com/AgrospAI/oceanprotocol-job-details"

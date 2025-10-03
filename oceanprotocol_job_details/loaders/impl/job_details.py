@@ -1,10 +1,13 @@
-import os
-from dataclasses import dataclass, field
-from typing import Generic, Type, TypeVar, final
+from __future__ import annotations
 
-from oceanprotocol_job_details.loaders.impl.ddo import DDOLoader
-from oceanprotocol_job_details.loaders.impl.files import FilesLoader
-from oceanprotocol_job_details.ocean import JobDetails
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Generic, Type, TypeVar, final
+
+from oceanprotocol_job_details.paths import Paths
+
+if TYPE_CHECKING:
+    from oceanprotocol_job_details.ocean import DDO, Files, JobDetails
+
 
 T = TypeVar("T")
 
@@ -12,15 +15,21 @@ T = TypeVar("T")
 @final
 @dataclass(frozen=True)
 class JobDetailsLoader(Generic[T]):
+
     _type: Type[T] = field(repr=False)
-    
+
+    files: Files
+    secret: str
+    paths: Paths
+    ddos: list[DDO]
 
     def load(self) -> JobDetails[T]:
-        dids = os.environ.get("DIDS")
-        transformation_did = os.environ.get("TRANSFORMATION_DID")
-        secret = os.environ.get("SECRET")
+        from oceanprotocol_job_details.ocean import JobDetails
 
-        files = FilesLoader(dids, transformation_did).load()
-        ddos = DDOLoader([f.ddo for f in files]).load()
-
-        return JobDetails(files=files, secret=secret, ddos=ddos, _type=self._type)
+        return JobDetails(
+            files=self.files,
+            secret=self.secret,
+            ddos=self.ddos,
+            paths=self.paths,
+            _type=self._type,
+        )

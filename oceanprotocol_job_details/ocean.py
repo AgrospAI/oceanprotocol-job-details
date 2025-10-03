@@ -1,16 +1,27 @@
+from __future__ import annotations
+
+import logging
+import os
 from dataclasses import dataclass, field
 from functools import cached_property
-from typing import Any, Generic, Optional, Type, TypeVar, final
+from pathlib import Path
+from typing import Any, Generic, Iterator, Optional, Sequence, Type, TypeVar, final
 
 import orjson
-
 from dataclasses_json import config as dc_config
 from dataclasses_json import dataclass_json
 
-from oceanprotocol_job_details.config import config
-from oceanprotocol_job_details.loaders.impl.files import Files
+from oceanprotocol_job_details.di import Container
+from oceanprotocol_job_details.paths import Paths
 
 T = TypeVar("T")
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(threadName)s] [%(levelname)s]  %(message)s",
+    handlers=[logging.StreamHandler()],
+)
+logger = logging.getLogger(__name__)
 
 
 @dataclass_json
@@ -29,7 +40,7 @@ class Credentials:
 
 @dataclass_json
 @dataclass
-class Container:
+class DockerContainer:
     image: str
     tag: str
     entrypoint: str
@@ -38,7 +49,7 @@ class Container:
 @dataclass_json
 @dataclass
 class Algorithm:  # type: ignore
-    container: Container
+    container: DockerContainer
     language: str
     version: str
     consumerParameters: Any  # type: ignore
@@ -157,6 +168,39 @@ class DDO:
     purgatory: Purgatory
 
 
+@dataclass(frozen=True)
+class DIDPaths:
+    did: str
+    ddo: Path
+    input_files: Sequence[Path]
+
+    def __post_init__(self) -> None:
+        assert self.ddo.exists(), f"DDO {self.ddo} does not exist"
+        for input_file in self.input_files:
+            assert input_file.exists(), f"File {input_file} does not exist"
+
+    def __len__(self) -> int:
+        return len(self.input_files)
+
+
+@dataclass(frozen=True)
+class Files:
+    _files: Sequence[DIDPaths]
+
+    @property
+    def files(self) -> Sequence[DIDPaths]:
+        return self._files
+
+    def __getitem__(self, index: int) -> DIDPaths:
+        return self.files[index]
+
+    def __iter__(self) -> Iterator[DIDPaths]:
+        return iter(self.files)
+
+    def __len__(self) -> int:
+        return len(self.files)
+
+
 def _normalize_json(value):
     if isinstance(value, str):
         try:
@@ -173,6 +217,12 @@ def _normalize_json(value):
 
 @final
 @dataclass_json
+@dataclass
+class _EmptyJobDetails: ...
+
+
+@final
+@dataclass_json
 @dataclass(frozen=True)
 class JobDetails(Generic[T]):
     files: Files
@@ -180,6 +230,9 @@ class JobDetails(Generic[T]):
 
     ddos: list[DDO]
     """list of paths to the DDOs"""
+
+    paths: Paths
+    """Configuration paths"""
 
     # Store the type explicitly to avoid issues
     _type: Type[T] = field(repr=False)
@@ -195,11 +248,11 @@ class JobDetails(Generic[T]):
     def input_parameters(self) -> T:
         """Read the input parameters and return them in an instance of the dataclass T"""
 
-        with open(config.path_algorithm_custom_parameters, "r") as f:
+        with open(self.paths.algorithm_custom_parameters, "r") as f:
             raw = f.read().strip()
             if not raw:
                 raise ValueError(
-                    f"Custom parameters file {config.path_algorithm_custom_parameters} is empty"
+                    f"Custom parameters file {self.paths.algorithm_custom_parameters} is empty"
                 )
             try:
                 parsed = _normalize_json(orjson.loads(raw))
@@ -209,3 +262,32 @@ class JobDetails(Generic[T]):
                     f"Failed to parse input paramers into {self._type.__name__}: {e}\n"
                     f"Raw content: {raw}"
                 ) from e
+
+    @classmethod
+    def load(cls, _type: Type[T] | None = None) -> JobDetails[T]:
+        """Load a JobDetails instance that holds the runtime details.
+
+        Loading it will check the following:
+        1. That the needed environment variables are set.
+        1. That the ocean protocol contains the needed data based on the passed environment variables.
+
+        Those needed environment variables are:
+        - DIDS: The DIDs of the inputs
+        - TRANSFORMATION_DID: The DID of the transformation algorithm
+        - SECRET (optional): A really secret secret
+
+        """
+
+        if _type is None:
+            _type = _EmptyJobDetails
+
+        container = Container()
+        container.config.from_dict(
+            {
+                "dids": os.environ.get("DIDS"),
+                "transformation_did": os.environ.get("TRANSFORMATION_DID"),
+                "secret": os.environ.get("SECRET"),
+            }
+        )
+
+        return container.job_details_loader(_type=_type).load()
