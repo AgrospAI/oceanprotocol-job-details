@@ -13,5 +13,5 @@ services:
       DEV: 1
       TEST: 1
       DIDS: '["17feb697190d9f5912e064307006c06019c766d35e4e3f239ebb69fb71096e42"]'
-      secret: "a super super secret"
+      secret: "a super secret secret"
       TRANSFORMATION_DID: "1234567890"

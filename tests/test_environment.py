@@ -1,10 +1,8 @@
 import json
 from dataclasses import asdict, dataclass
-from pathlib import Path
 
 import pytest
 
-from oceanprotocol_job_details.job_details import OceanProtocolJobDetails
 from oceanprotocol_job_details.ocean import JobDetails
 
 
@@ -21,7 +19,7 @@ details: JobDetails[CustomParameters]
 def setup():  # type: ignore
     global details
 
-    details = OceanProtocolJobDetails(CustomParameters).load()
+    details = JobDetails.load(CustomParameters)
 
     yield
 
@@ -63,7 +61,7 @@ def test_algorithm_custom_parameters() -> None:
 
 
 def test_empty_custom_parameters() -> None:
-    empty_details = OceanProtocolJobDetails().load()  # type: ignore
+    empty_details = JobDetails.load()
     assert (
         len(empty_details.input_parameters.to_dict().keys()) == 0
     ), "There should be no input parameters"
@@ -71,10 +69,10 @@ def test_empty_custom_parameters() -> None:
 
 def test_stringified_dict_custom_parameters() -> None:
     # create a temporary parameters file with stringified JSON
-    from oceanprotocol_job_details.config import config
 
-    params_file = config.path_algorithm_custom_parameters
-    params_file.write_text(
+    from oceanprotocol_job_details.paths import Paths
+
+    Paths().algorithm_custom_parameters.write_text(
         json.dumps(
             {
                 "example": json.dumps("data"),  # stringified primitive
@@ -84,7 +82,7 @@ def test_stringified_dict_custom_parameters() -> None:
     )
 
     # Load JobDetails with this custom parameters file
-    details = OceanProtocolJobDetails(CustomParameters).load()
+    details: JobDetails[CustomParameters] = JobDetails.load(_type=CustomParameters)
 
     # The stringified JSON should be parsed back into the correct types
     assert details.input_parameters.example == "data"
