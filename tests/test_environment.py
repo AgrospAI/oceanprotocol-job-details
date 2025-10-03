@@ -3,7 +3,7 @@ from dataclasses import asdict, dataclass
 
 import pytest
 
-from oceanprotocol_job_details.ocean import JobDetails
+from oceanprotocol_job_details import JobDetails
 
 
 @dataclass(frozen=True)
