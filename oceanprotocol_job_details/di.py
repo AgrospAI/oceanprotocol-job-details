@@ -12,7 +12,7 @@ class Container(containers.DeclarativeContainer):
 
     paths = providers.Singleton(
         Paths,
-        base_dir=config.base_dirs,
+        base_dir=config.base_dir,
     )
 
     file_loader = providers.Factory(
