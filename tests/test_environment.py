@@ -8,6 +8,7 @@ import pytest
 from oceanprotocol_job_details import JobDetails
 from oceanprotocol_job_details.di import Container
 from oceanprotocol_job_details.paths import Paths
+import shutil
 
 
 @dataclass(frozen=True)
@@ -76,6 +77,11 @@ def test_stringified_dict_custom_parameters() -> None:
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_path = Path(tmp_dir)
+
+        # Copy original data to tmp path
+        src_data_dir = "/data"
+        dst_data_dir = tmp_path / "."
+        shutil.copytree(src_data_dir, dst_data_dir, dirs_exist_ok=True)
 
         container = Container()
         container.config.base_dir.from_Value(tmp_path)
