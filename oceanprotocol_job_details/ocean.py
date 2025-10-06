@@ -264,7 +264,13 @@ class JobDetails(Generic[T]):
                 ) from e
 
     @classmethod
-    def load(cls, _type: Type[T] | None = None) -> JobDetails[T]:
+    def load(
+        cls,
+        _type: Type[T] | None = None,
+        dids: str | None = None,
+        transformation_did: str | None = None,
+        secret: str | None = None,
+    ) -> JobDetails[T]:
         """Load a JobDetails instance that holds the runtime details.
 
         Loading it will check the following:
@@ -284,9 +290,10 @@ class JobDetails(Generic[T]):
         container = Container()
         container.config.from_dict(
             {
-                "dids": os.environ.get("DIDS"),
-                "transformation_did": os.environ.get("TRANSFORMATION_DID"),
-                "secret": os.environ.get("SECRET"),
+                "dids": dids or os.environ.get("DIDS"),
+                "transformation_did": transformation_did
+                or os.environ.get("TRANSFORMATION_DID"),
+                "secret": secret or os.environ.get("SECRET"),
             }
         )
 
