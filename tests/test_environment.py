@@ -78,7 +78,7 @@ def test_stringified_dict_custom_parameters() -> None:
         tmp_path = Path(tmp_dir)
 
         container = Container()
-        container.config.base_dirs.from_Value(tmp_path)
+        container.config.base_dir.from_Value(tmp_path)
 
         paths: Paths = container.paths()
         paths.algorithm_custom_parameters.write_text(
