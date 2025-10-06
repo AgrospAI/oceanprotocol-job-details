@@ -267,6 +267,8 @@ class JobDetails(Generic[T]):
     def load(
         cls,
         _type: Type[T] | None = None,
+        *,
+        base_dir: str | None = None,
         dids: str | None = None,
         transformation_did: str | None = None,
         secret: str | None = None,
@@ -278,6 +280,7 @@ class JobDetails(Generic[T]):
         1. That the ocean protocol contains the needed data based on the passed environment variables.
 
         Those needed environment variables are:
+        - BASE_DIR: Base directory to read the data from, parent of the ddos, inputs, outputs and logs directories.
         - DIDS: The DIDs of the inputs
         - TRANSFORMATION_DID: The DID of the transformation algorithm
         - SECRET (optional): A really secret secret
@@ -290,6 +293,7 @@ class JobDetails(Generic[T]):
         container = Container()
         container.config.from_dict(
             {
+                "base_dir": base_dir or os.environ.get("BASE_DIR", None),
                 "dids": dids or os.environ.get("DIDS"),
                 "transformation_did": transformation_did
                 or os.environ.get("TRANSFORMATION_DID"),

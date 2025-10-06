@@ -1,28 +1,38 @@
-from dataclasses import dataclass
-from logging import getLogger
+from dataclasses import InitVar, dataclass, field
 from pathlib import Path
-
-logger = getLogger(__name__)
 
 
 @dataclass
 class Paths:
     """Configuration class for the Ocean Protocol Job Details"""
 
-    data: Path = Path("/data")
-    """The path to the data directory"""
+    base_dir: InitVar[Path | None]
 
-    inputs: Path = data / "inputs"
-    """The path to the inputs directory"""
+    _base: Path = field(init=False)
 
-    ddos: Path = data / "ddos"
-    """The path to the DDOs directory"""
+    def __post_init__(self, base_dir: Path | None) -> None:
+        self._base = base_dir or Path("/data")
 
-    outputs: Path = data / "outputs"
-    """The path to the outputs directory"""
+    @property
+    def data(self) -> Path:
+        return self._base
 
-    logs: Path = data / "logs"
-    """The path to the logs directory"""
+    @property
+    def inputs(self) -> Path:
+        return self.data / "inputs"
 
-    algorithm_custom_parameters: Path = inputs / "algoCustomData.json"
-    """The path to the algorithm's custom parameters file"""
+    @property
+    def ddos(self) -> Path:
+        return self.data / "ddos"
+
+    @property
+    def outputs(self) -> Path:
+        return self.data / "outputs"
+
+    @property
+    def logs(self) -> Path:
+        return self.data / "logs"
+
+    @property
+    def algorithm_custom_parameters(self) -> Path:
+        return self.inputs / "algoCustomData.json"

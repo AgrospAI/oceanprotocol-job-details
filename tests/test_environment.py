@@ -1,9 +1,13 @@
 import json
 from dataclasses import asdict, dataclass
+from pathlib import Path
+import tempfile
 
 import pytest
 
 from oceanprotocol_job_details import JobDetails
+from oceanprotocol_job_details.di import Container
+from oceanprotocol_job_details.paths import Paths
 
 
 @dataclass(frozen=True)
@@ -70,20 +74,27 @@ def test_empty_custom_parameters() -> None:
 def test_stringified_dict_custom_parameters() -> None:
     # create a temporary parameters file with stringified JSON
 
-    from oceanprotocol_job_details.paths import Paths
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_path = Path(tmp_dir)
 
-    Paths().algorithm_custom_parameters.write_text(
-        json.dumps(
-            {
-                "example": json.dumps("data"),  # stringified primitive
-                "isTrue": json.dumps(True),  # stringified boolean
-            }
+        container = Container()
+        container.config.base_dirs.from_Value(tmp_path)
+
+        paths: Paths = container.paths()
+        paths.algorithm_custom_parameters.write_text(
+            json.dumps(
+                {
+                    "example": json.dumps("data"),  # stringified primitive
+                    "isTrue": json.dumps(True),  # stringified boolean
+                }
+            )
         )
-    )
 
-    # Load JobDetails with this custom parameters file
-    details: JobDetails[CustomParameters] = JobDetails.load(_type=CustomParameters)
+        # Load JobDetails with this custom parameters file
+        details: JobDetails[CustomParameters] = JobDetails.load(
+            _type=CustomParameters, base_dir=tmp_path
+        )
 
-    # The stringified JSON should be parsed back into the correct types
-    assert details.input_parameters.example == "data"
-    assert details.input_parameters.isTrue is True
+        # The stringified JSON should be parsed back into the correct types
+        assert details.input_parameters.example == "data"
+        assert details.input_parameters.isTrue is True
