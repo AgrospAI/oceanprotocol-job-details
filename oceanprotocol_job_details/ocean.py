@@ -308,7 +308,7 @@ class JobDetails(Generic[T]):
         container = Container()
         container.config.from_dict(
             {
-                "base_dir": base_dir or os.environ.get("BASE_DIR", None),
+                "base_dir": base_dir or os.environ.get("BASE_DIR"),
                 "dids": dids or os.environ.get("DIDS"),
                 "transformation_did": transformation_did
                 or os.environ.get("TRANSFORMATION_DID"),
