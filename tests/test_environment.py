@@ -1,14 +1,15 @@
 import json
+import os
+import shutil
+import tempfile
 from dataclasses import asdict, dataclass
 from pathlib import Path
-import tempfile
 
 import pytest
 
 from oceanprotocol_job_details import JobDetails
 from oceanprotocol_job_details.di import Container
 from oceanprotocol_job_details.paths import Paths
-import shutil
 
 
 @dataclass(frozen=True)
@@ -17,22 +18,36 @@ class CustomParameters:
     isTrue: bool
 
 
-details: JobDetails[CustomParameters]
+@pytest.fixture(scope="session", autouse=True)
+def config():
+    config = {
+        "base_dir": "./_data",
+        "dids": '["17feb697190d9f5912e064307006c06019c766d35e4e3f239ebb69fb71096e42"]',
+        "secret": "a super secret secret",
+        "transformation_did": "1234567890",
+    }
+
+    yield config
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup():  # type: ignore
-    global details
+def details(config):
+    details = JobDetails.load(
+        CustomParameters,
+        **config,
+    )
 
-    details = JobDetails.load(CustomParameters)
-
-    yield
-
-    print("JobDetails", details)
-    print("Ending session")
+    yield details
 
 
-def test_files() -> None:
+@pytest.fixture(scope="session", autouse=True)
+def empty_details(config):
+    empty_details = JobDetails.load(**config)
+
+    yield empty_details
+
+
+def test_files(details) -> None:
     assert details.files, "There should be detected files"
     assert len(details.files) == 1, "There should be exactly one detected file"
     for file in details.files:
@@ -43,7 +58,7 @@ def test_files() -> None:
     assert details.files[0], "Can't access files by index"
 
 
-def test_ddo() -> None:
+def test_ddo(details) -> None:
     assert details.ddos
     assert len(details.ddos) == 1, "There should be exactly one detected DDO"
 
@@ -56,7 +71,7 @@ def test_ddo() -> None:
     assert ddo_keys == loaded_ddo_keys, "DDO keys mismatch. "
 
 
-def test_algorithm_custom_parameters() -> None:
+def test_algorithm_custom_parameters(details) -> None:
     assert details.input_parameters is not None
     assert len(asdict(details.input_parameters).keys()) == 2
     assert details.input_parameters.isTrue
@@ -65,28 +80,27 @@ def test_algorithm_custom_parameters() -> None:
     assert details.input_parameters.example == "data"
 
 
-def test_empty_custom_parameters() -> None:
-    empty_details = JobDetails.load()
+def test_empty_custom_parameters(empty_details) -> None:
     assert (
         len(empty_details.input_parameters.to_dict().keys()) == 0
     ), "There should be no input parameters"
 
 
-def test_stringified_dict_custom_parameters() -> None:
+def test_stringified_dict_custom_parameters(config, empty_details) -> None:
     # create a temporary parameters file with stringified JSON
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_path = Path(tmp_dir)
 
         # Copy original data to tmp path
-        src_data_dir = "/data"
+        src_data_dir = empty_details.paths._base
         dst_data_dir = tmp_path / "."
         shutil.copytree(src_data_dir, dst_data_dir, dirs_exist_ok=True)
 
         container = Container()
         container.config.base_dir.from_Value(tmp_path)
 
-        paths: Paths = container.paths()
+        paths = container.paths(base_dir=tmp_dir)
         paths.algorithm_custom_parameters.write_text(
             json.dumps(
                 {
@@ -96,9 +110,11 @@ def test_stringified_dict_custom_parameters() -> None:
             )
         )
 
+        config["base_dir"] = tmp_path
         # Load JobDetails with this custom parameters file
-        details: JobDetails[CustomParameters] = JobDetails.load(
-            _type=CustomParameters, base_dir=tmp_path
+        details = JobDetails[CustomParameters].load(
+            _type=CustomParameters,
+            **config,
         )
 
         # The stringified JSON should be parsed back into the correct types
@@ -106,8 +122,7 @@ def test_stringified_dict_custom_parameters() -> None:
         assert details.input_parameters.isTrue is True
 
 
-def test_yielding_files() -> None:
-
+def test_yielding_files(details) -> None:
     files = list(details.next_path())
 
     assert len(files) == 1

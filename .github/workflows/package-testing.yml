@@ -21,10 +21,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Run docker compose
-      uses: hoverkraft-tech/compose-action@v2.0.1
-      with:
-        compose-file: "./docker-compose.yaml"
-        up-flags: "--build"
-      env:
-        PYTHON_VERSION: ${{ matrix.python-version }}
+    - name: Setup and Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.6.4"
+
+    - name: Set up Python
+      run: uv python install
+
+    - name: Run tests
+      run: uv run pytest
