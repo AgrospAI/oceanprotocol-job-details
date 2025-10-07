@@ -5,7 +5,17 @@ import os
 from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
-from typing import Any, Generic, Iterator, Optional, Sequence, Type, TypeVar, final
+from typing import (
+    Any,
+    Generator,
+    Generic,
+    Iterator,
+    Optional,
+    Sequence,
+    Type,
+    TypeVar,
+    final,
+)
 
 import orjson
 from dataclasses_json import config as dc_config
@@ -243,6 +253,11 @@ class JobDetails(Generic[T]):
     def __post_init__(self) -> None:
         if not hasattr(self._type, "__dataclass_fields__"):
             raise TypeError(f"{self._type} is not a dataclass type")
+
+    def next_path(self) -> Generator[Path, None, None]:
+        for did_files in self.files:
+            for file in did_files.input_files:
+                yield file
 
     @cached_property
     def input_parameters(self) -> T:

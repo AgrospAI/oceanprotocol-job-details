@@ -104,3 +104,10 @@ def test_stringified_dict_custom_parameters() -> None:
         # The stringified JSON should be parsed back into the correct types
         assert details.input_parameters.example == "data"
         assert details.input_parameters.isTrue is True
+
+
+def test_yielding_files() -> None:
+
+    files = list(details.next_path())
+
+    assert len(files) == 1
