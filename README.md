@@ -68,6 +68,21 @@ job_details.input_parameters.foo.bar
 
 The values to fill the custom `InputParameters` will be parsed from the `algoCustomData.json` located next to the input data directories. 
 
+### Iterating Input Files the clean way
+
+```python
+from oceanprotocol_job_details import JobDetails
+
+
+job_details = JobDetails.load()
+
+for idx, file_path in job_details.next_file():
+    ...
+
+# Or if you just want one file path
+_, file_path = job_details.next_file()
+```
+
 ## OceanProtocol Structure
 
 ```bash
