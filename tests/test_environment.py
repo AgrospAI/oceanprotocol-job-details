@@ -8,6 +8,7 @@ import pytest
 from oceanprotocol_job_details import JobDetails
 from oceanprotocol_job_details.di import Container
 from oceanprotocol_job_details.paths import Paths
+import shutil
 
 
 @dataclass(frozen=True)
@@ -77,6 +78,11 @@ def test_stringified_dict_custom_parameters() -> None:
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_path = Path(tmp_dir)
 
+        # Copy original data to tmp path
+        src_data_dir = "/data"
+        dst_data_dir = tmp_path / "."
+        shutil.copytree(src_data_dir, dst_data_dir, dirs_exist_ok=True)
+
         container = Container()
         container.config.base_dir.from_Value(tmp_path)
 
@@ -98,3 +104,15 @@ def test_stringified_dict_custom_parameters() -> None:
         # The stringified JSON should be parsed back into the correct types
         assert details.input_parameters.example == "data"
         assert details.input_parameters.isTrue is True
+
+
+def test_yielding_files() -> None:
+
+    files = list(details.next_path())
+
+    assert len(files) == 1
+    assert isinstance(files[0], tuple)
+
+    idx, path = files[0]
+    assert idx == 0
+    assert path.exists() and path.is_file()
