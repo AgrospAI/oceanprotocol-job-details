@@ -254,10 +254,10 @@ class JobDetails(Generic[T]):
         if not hasattr(self._type, "__dataclass_fields__"):
             raise TypeError(f"{self._type} is not a dataclass type")
 
-    def next_path(self) -> Generator[Path, None, None]:
-        for did_files in self.files:
+    def next_path(self) -> Generator[tuple[int, Path], None, None]:
+        for idx, did_files in enumerate(self.files):
             for file in did_files.input_files:
-                yield file
+                yield (idx, file)
 
     @cached_property
     def input_parameters(self) -> T:

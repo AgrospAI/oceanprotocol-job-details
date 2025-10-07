@@ -111,3 +111,8 @@ def test_yielding_files() -> None:
     files = list(details.next_path())
 
     assert len(files) == 1
+    assert isinstance(files[0], tuple)
+
+    idx, path = files[0]
+    assert idx == 0
+    assert path.exists() and path.is_file()
