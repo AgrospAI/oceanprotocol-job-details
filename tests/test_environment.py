@@ -1,5 +1,4 @@
 import json
-import os
 import shutil
 import tempfile
 from dataclasses import asdict, dataclass
@@ -9,7 +8,6 @@ import pytest
 
 from oceanprotocol_job_details import JobDetails
 from oceanprotocol_job_details.di import Container
-from oceanprotocol_job_details.paths import Paths
 
 
 @dataclass(frozen=True)
@@ -19,32 +17,36 @@ class CustomParameters:
 
 
 @pytest.fixture(scope="session", autouse=True)
-def config():
-    config = {
-        "base_dir": "./_data",
+def base_dir():
+    yield {"base_dir": "./_data"}
+
+
+@pytest.fixture(scope="session", autouse=True)
+def config(base_dir):
+    yield {
+        **base_dir,
         "dids": '["17feb697190d9f5912e064307006c06019c766d35e4e3f239ebb69fb71096e42"]',
         "secret": "a super secret secret",
         "transformation_did": "1234567890",
     }
 
-    yield config
-
 
 @pytest.fixture(scope="session", autouse=True)
 def details(config):
-    details = JobDetails.load(
+    yield JobDetails.load(
         CustomParameters,
         **config,
     )
 
-    yield details
-
 
 @pytest.fixture(scope="session", autouse=True)
 def empty_details(config):
-    empty_details = JobDetails.load(**config)
+    yield JobDetails.load(**config)
 
-    yield empty_details
+
+@pytest.fixture(scope="session", autouse=True)
+def empty_config_details(base_dir):
+    yield JobDetails.load(**base_dir)
 
 
 def test_files(details) -> None:
@@ -131,3 +133,9 @@ def test_yielding_files(details) -> None:
     idx, path = files[0]
     assert idx == 0
     assert path.exists() and path.is_file()
+
+
+def test_empty_config_defaults(empty_config_details) -> None:
+    assert "17feb697190d9f5912e064307006c06019c766d35e4e3f239ebb69fb71096e42" in [
+        f.did for f in empty_config_details.files
+    ], "Did not auto-detect DIDS"

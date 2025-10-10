@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import json
 from dataclasses import InitVar, dataclass, field
-from typing import TYPE_CHECKING, Sequence, final
+from logging import Logger
+from typing import TYPE_CHECKING, final
 
 from oceanprotocol_job_details.paths import Paths
 
@@ -23,7 +24,10 @@ class FilesLoader:
     paths: Paths
     """Path configurations of the project"""
 
-    _dids: Sequence[str] = field(init=False)
+    logger: Logger
+    """Logger to use"""
+
+    _dids: str = field(init=False)
     _transformation_did: str = field(init=False)
 
     def __post_init__(
@@ -31,11 +35,17 @@ class FilesLoader:
         dids: str | None,
         transformation_did: str | None,
     ) -> None:
-        assert dids, "Missing DIDs"
-        assert transformation_did, "Missing transformation DID"
+        def _load_dids(dids, logger):
+            if dids:
+                return json.loads(dids)
 
-        object.__setattr__(self, "_dids", json.loads(dids))
+            logger.info("Missing DIDS, Inferring DIDS from input DDOs")
+            return [f.parts[-1] for f in self.paths.ddos.iterdir()]
+
         object.__setattr__(self, "_transformation_did", transformation_did)
+        object.__setattr__(self, "_dids", _load_dids(dids, self.logger))
+
+        assert self._dids, "Missing input DIDs"
 
     def load(self) -> Files:
         from oceanprotocol_job_details.ocean import DIDPaths, Files

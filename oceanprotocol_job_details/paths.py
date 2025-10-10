@@ -11,7 +11,7 @@ class Paths:
     _base: Path = field(init=False)
 
     def __post_init__(self, base_dir: str | Path | None) -> None:
-        self._base = Path(base_dir) or Path("/data")
+        self._base = Path(base_dir) if base_dir else Path("/data")
 
     @property
     def data(self) -> Path:

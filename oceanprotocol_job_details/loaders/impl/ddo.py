@@ -28,5 +28,5 @@ class DDOLoader:
         ddos = []
         for path in self._ddo_paths:
             with open(path, "r") as f:
-                ddos.append(DDO.from_json(f.read()))  # type: ignore
+                ddos.append(DDO.from_json(f.read()))
         return ddos

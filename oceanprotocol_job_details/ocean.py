@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import logging
 import os
 from dataclasses import dataclass, field
 from functools import cached_property
+from logging import Logger, getLogger
 from pathlib import Path
 from typing import (
     Any,
@@ -24,14 +24,7 @@ from dataclasses_json import dataclass_json
 from oceanprotocol_job_details.di import Container
 from oceanprotocol_job_details.paths import Paths
 
-T = TypeVar("T")
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(threadName)s] [%(levelname)s]  %(message)s",
-    handlers=[logging.StreamHandler()],
-)
-logger = logging.getLogger(__name__)
+InputParemetersT = TypeVar("InputParemetersT")
 
 
 @dataclass_json
@@ -234,7 +227,7 @@ class _EmptyJobDetails: ...
 @final
 @dataclass_json
 @dataclass(frozen=True)
-class JobDetails(Generic[T]):
+class JobDetails(Generic[InputParemetersT]):
     files: Files
     """The input filepaths"""
 
@@ -245,7 +238,7 @@ class JobDetails(Generic[T]):
     """Configuration paths"""
 
     # Store the type explicitly to avoid issues
-    _type: Type[T] = field(repr=False)
+    _type: Type[InputParemetersT] = field(repr=False)
 
     secret: str | None = None
     """Shh it's a secret"""
@@ -260,8 +253,8 @@ class JobDetails(Generic[T]):
                 yield (idx, file)
 
     @cached_property
-    def input_parameters(self) -> T:
-        """Read the input parameters and return them in an instance of the dataclass T"""
+    def input_parameters(self) -> InputParemetersT:
+        """Read the input parameters and return them in an instance of the dataclass InputParemetersT"""
 
         with open(self.paths.algorithm_custom_parameters, "r") as f:
             raw = f.read().strip()
@@ -281,13 +274,14 @@ class JobDetails(Generic[T]):
     @classmethod
     def load(
         cls,
-        _type: Type[T] | None = None,
+        _type: Type[InputParemetersT] | None = None,
         *,
         base_dir: str | None = None,
         dids: str | None = None,
         transformation_did: str | None = None,
         secret: str | None = None,
-    ) -> JobDetails[T]:
+        logger: Logger | None = None,
+    ) -> JobDetails[InputParemetersT]:
         """Load a JobDetails instance that holds the runtime details.
 
         Loading it will check the following:
@@ -299,7 +293,6 @@ class JobDetails(Generic[T]):
         - DIDS: The DIDs of the inputs
         - TRANSFORMATION_DID: The DID of the transformation algorithm
         - SECRET (optional): A really secret secret
-
         """
 
         if _type is None:
@@ -308,11 +301,12 @@ class JobDetails(Generic[T]):
         container = Container()
         container.config.from_dict(
             {
-                "base_dir": base_dir or os.environ.get("BASE_DIR"),
-                "dids": dids or os.environ.get("DIDS"),
+                "base_dir": base_dir or os.environ.get("BASE_DIR", None),
+                "dids": dids or os.environ.get("DIDS", None),
                 "transformation_did": transformation_did
-                or os.environ.get("TRANSFORMATION_DID"),
-                "secret": secret or os.environ.get("SECRET"),
+                or os.environ.get("TRANSFORMATION_DID", None),
+                "secret": secret or os.environ.get("SECRET", None),
+                "logger": logger or getLogger(__name__),
             }
         )
 
