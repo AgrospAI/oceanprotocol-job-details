@@ -20,6 +20,7 @@ class Container(containers.DeclarativeContainer):
         dids=config.dids,
         transformation_did=config.transformation_did,
         paths=paths,
+        logger=config.logger,
     )
 
     files = providers.Factory(
