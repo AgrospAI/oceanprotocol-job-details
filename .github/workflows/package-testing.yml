@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10-alpine", "3.11-alpine", "3.12-alpine", "3.13-alpine"]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
 
     steps:
     - uses: actions/checkout@v4
@@ -26,8 +26,8 @@ jobs:
       with:
         version: "0.6.4"
 
-    - name: Set up Python
-      run: uv python install
+    - name: Set up Python ${{ matrix.python-version }}
+      run: uv python install ${{ matrix.python-version }}
 
     - name: Run tests
       run: uv run pytest
