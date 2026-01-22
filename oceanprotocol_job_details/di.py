@@ -15,7 +15,7 @@ class Container(containers.DeclarativeContainer):
         base_dir=config.base_dir,
     )
 
-    file_loader = providers.Factory(
+    file_loader = providers.Singleton(
         FilesLoader,
         dids=config.dids,
         transformation_did=config.transformation_did,

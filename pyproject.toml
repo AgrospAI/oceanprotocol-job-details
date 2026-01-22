@@ -25,7 +25,9 @@ Homepage = "https://github.com/AgrospAI/oceanprotocol-job-details"
 Issues = "https://github.com/AgrospAI/oceanprotocol-job-details/issues"
 
 [tool.pytest.ini_options]
+log_level = "DEBUG"
 pythonpath = "oceanprotocol_job_details"
+log_cli = true
 
 [build-system]
 requires = ["hatchling"]
