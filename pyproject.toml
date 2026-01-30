@@ -16,7 +16,6 @@ classifiers = [
 ]
 dependencies = [
     "aiofiles>=25.1.0",
-    "dataclasses-json>=0.6.7",
     "dependency-injector>=4.48.2",
     "orjson>=3.11.3",
     "pydantic>=2.12.5",
