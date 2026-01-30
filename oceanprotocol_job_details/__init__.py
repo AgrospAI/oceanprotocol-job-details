@@ -1,4 +1,4 @@
 from .ocean import JobDetails
 
 
-__all__ = [JobDetails]
+__all__ = [JobDetails]  # type: ignore

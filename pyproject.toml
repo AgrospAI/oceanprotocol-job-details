@@ -15,9 +15,12 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
 ]
 dependencies = [
+    "aiofiles>=25.1.0",
     "dataclasses-json>=0.6.7",
     "dependency-injector>=4.48.2",
     "orjson>=3.11.3",
+    "pydantic>=2.12.5",
+    "pydantic-settings>=2.12.0",
 ]
 
 [project.urls]
@@ -25,7 +28,7 @@ Homepage = "https://github.com/AgrospAI/oceanprotocol-job-details"
 Issues = "https://github.com/AgrospAI/oceanprotocol-job-details/issues"
 
 [tool.pytest.ini_options]
-log_level = "DEBUG"
+log_level = "INFO"
 pythonpath = "oceanprotocol_job_details"
 log_cli = true
 
@@ -40,9 +43,10 @@ include = ["oceanprotocol_job_details"]
 include = ["oceanprotocol_job_details"]
 
 [tool.mypy]
+plugins = ["pydantic.mypy"]
 strict = true
 warn_return_any = true
 disallow_any_explicit = true
 
 [dependency-groups]
-dev = ["mypy>=1.15.0", "pytest>=8.3.4"]
+dev = ["mypy>=1.15.0", "pytest>=8.3.4", "types-aiofiles>=25.1.0.20251011"]

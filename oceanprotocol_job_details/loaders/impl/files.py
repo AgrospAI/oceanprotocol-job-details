@@ -1,64 +1,48 @@
 from __future__ import annotations
 
-import json
 from dataclasses import InitVar, dataclass, field
 from logging import Logger
-from typing import TYPE_CHECKING, final
+from pathlib import Path
+from typing import Literal, final
 
-from oceanprotocol_job_details.paths import Paths
-
-if TYPE_CHECKING:
-    from oceanprotocol_job_details.ocean import DIDPaths, Files
+from oceanprotocol_job_details.domain import DIDPaths, Files, Paths
 
 
 @final
 @dataclass(frozen=True)
 class FilesLoader:
-
-    dids: InitVar[str | None]
-    """Input DIDs"""
-
-    transformation_did: InitVar[str | None]
-    """DID for the transformation algorithm"""
-
     paths: Paths
     """Path configurations of the project"""
 
-    logger: Logger
+    logger: Logger = field(repr=False)
     """Logger to use"""
 
-    _dids: str = field(init=False)
+    dids: list[str]
+    """Input DIDs"""
+
+    transformation_did: InitVar[str | None] = None
+    """DID for the transformation algorithm"""
+
     _transformation_did: str = field(init=False)
 
-    def __post_init__(
-        self,
-        dids: str | None,
-        transformation_did: str | None,
-    ) -> None:
-        def _load_dids(dids, logger):
-            if dids:
-                return json.loads(dids)
-
-            logger.info("Missing DIDS, Inferring DIDS from input DDOs")
-            return [f.parts[-1] for f in self.paths.ddos.iterdir()]
-
+    def __post_init__(self, transformation_did: str | None) -> None:
         object.__setattr__(self, "_transformation_did", transformation_did)
-        object.__setattr__(self, "_dids", _load_dids(dids, self.logger))
 
-        assert self._dids, "Missing input DIDs"
+        assert self.dids, "Missing input DIDs"
+
+    def calculate_path(self, did: str, path_type: Literal["input", "ddo"]) -> Path:
+        match path_type:
+            case "ddo":
+                return self.paths.ddos / did
+            case "input":
+                return self.paths.inputs / did
 
     def load(self) -> Files:
-        from oceanprotocol_job_details.ocean import DIDPaths, Files
-
-        files: list[DIDPaths] = []
-        for did in self._dids:
-            base = self.paths.inputs / did
-            files.append(
-                DIDPaths(
-                    did=did,
-                    ddo=self.paths.ddos / did,
-                    input_files=list(base.iterdir()),
-                )
+        return [
+            DIDPaths(
+                did=did,
+                ddo=self.calculate_path(did, "ddo"),
+                files=self.calculate_path(did, "input").iterdir(),
             )
-
-        return Files(files)
+            for did in self.dids
+        ]
