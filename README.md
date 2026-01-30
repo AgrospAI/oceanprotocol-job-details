@@ -4,24 +4,29 @@ A Python package to get details from OceanProtocol jobs
 
 ## Installation
 
-```
+```bash
 pip install oceanprotocol-job-details
 ```
 
-## Usage 
+```bash
+uv add oceanprotocol-job-details
+```
 
-As a simple library, we only need to import `JobDetails` and load it, it will:
+## Usage
 
-1. Fetch the needed parameters to populate the `JobDetails` instance from the environment variables or use the passed values to the `load()` method.
+As a simple library, we only need to import `load_job_details` and run it. It will:
+
+1. Fetch the needed parameters to populate the `JobDetails` instance from the environment variables or use the passed values to the function.
 1. Look for the files corresponding to the passed DIDs in the filesystem according to the [Ocean Protocol Structure](#oceanprotocol-structure) and load them into the `JobDetails` instance.
-
 
 ### Minimal Example
 
 ```python
-from oceanprotocol_job_details import JobDetails
+from oceanprotocol_job_details import load_job_details
 
-job_details = JobDetails.load()
+class InputParameters(BaseModel): ...
+
+job_details = load_job_details({}, InputParameters)
 ```
 
 ### Custom Input Parameters
@@ -29,58 +34,40 @@ job_details = JobDetails.load()
 If our algorithm has custom input parameters and we want to load them into our algorithm, we can do it as follows:
 
 ```python
-from dataclasses import dataclass
-from oceanprotocol_job_details import JobDetails
+from pydantic import BaseModel
+from oceanprotocol_job_details import load_job_details
 
 
-@dataclass
-class InputParameters:
-    foobar: str
-
-
-job_details = JobDetails[InputParameters].load(InputParameters)
-
-# Usage
-job_details.input_parameters.foobar
-```
-
-```python
-from dataclasses import dataclass
-from oceanprotocol_job_details import JobDetails
-
-
-@dataclass
-class Foo:
+class Foo(BaseModel):
     bar: str
 
 
-@dataclass
-class InputParameters:
+class InputParameters(BaseModel):
     # Allows for nested types
     foo: Foo
 
 
-job_details = JobDetails[InputParameters].load(InputParameters)
+job_details = load_job_details({}, InputParameters)
 
 # Usage
+job_details.input_parameters.foo
 job_details.input_parameters.foo.bar
 ```
 
-The values to fill the custom `InputParameters` will be parsed from the `algoCustomData.json` located next to the input data directories. 
+The values to fill the custom `InputParameters` will be parsed from the `algoCustomData.json` located next to the input data directories.
 
 ### Iterating Input Files the clean way
 
 ```python
-from oceanprotocol_job_details import JobDetails
+from oceanprotocol_job_details import load_job_details
 
 
-job_details = JobDetails.load()
+job_details = load_job_details
 
-for idx, file_path in job_details.next_file():
+for idx, file_path in job_details.inputs():
     ...
 
-# Or if you just want one file path
-_, file_path = job_details.next_file()
+_, file_path = next(job_details.inputs())
 ```
 
 ## OceanProtocol Structure

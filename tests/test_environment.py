@@ -8,8 +8,7 @@ import pytest
 from pydantic import BaseModel
 
 from oceanprotocol_job_details import JobDetails
-from oceanprotocol_job_details.di import Container
-from oceanprotocol_job_details.settings import JobSettings
+from oceanprotocol_job_details.helpers import create_container, load_job_details
 
 
 class CustomParameters(BaseModel):
@@ -31,36 +30,13 @@ def config():
 
 
 @pytest.fixture(scope="session")
-def container():
-    def _container(config):
-        container = Container()
-        settings = JobSettings(**config)
-        container.config.from_pydantic(settings)
-        return container
-
-    yield _container
+def job_details(config) -> Generator[JobDetails[CustomParameters], None, None]:
+    yield load_job_details(config, CustomParameters)
 
 
 @pytest.fixture(scope="session")
-def job_details_loader(config, container):
-    def _container(input_type):
-        return container(config).job_details_loader(input_type=input_type).load()
-
-    yield _container
-
-
-@pytest.fixture(scope="session")
-def job_details(
-    job_details_loader,
-) -> Generator[JobDetails[CustomParameters], None, None]:
-    yield job_details_loader(CustomParameters)
-
-
-@pytest.fixture(scope="session")
-def empty_job_details(
-    job_details_loader,
-) -> Generator[JobDetails[EmptyParameters], None, None]:
-    yield job_details_loader(EmptyParameters)
+def empty_job_details(config) -> Generator[JobDetails[EmptyParameters], None, None]:
+    yield load_job_details(config, EmptyParameters)
 
 
 def test_files(job_details):
@@ -101,7 +77,7 @@ def test_empty_custom_parameters(empty_job_details):
     assert len(custom_input_keys) == 0, "There should be no input parameters"
 
 
-def test_stringified_dict_custom_parameters(job_details_loader, container, config):
+def test_stringified_dict_custom_parameters(config):
     # Create a temporary directory to hold custom parameter file
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_path = Path(tmp_dir)
@@ -111,7 +87,7 @@ def test_stringified_dict_custom_parameters(job_details_loader, container, confi
         shutil.copytree(original_base, tmp_path, dirs_exist_ok=True)
 
         # Reconfigure container to use the temp directory
-        container = container({**config, "base_dir": tmp_path})
+        container = create_container({**config, "base_dir": tmp_path})
 
         # Write a stringified JSON parameters file
         paths = container.paths(base_dir=tmp_path)
@@ -124,7 +100,7 @@ def test_stringified_dict_custom_parameters(job_details_loader, container, confi
             )
         )
 
-        details = job_details_loader(CustomParameters)
+        details = load_job_details(config, CustomParameters)
 
         # Ensure stringified JSON is parsed correctly
         assert details.input_parameters.example == "data"
