@@ -1,13 +1,24 @@
 import asyncio
-from typing import Coroutine, TypeVar
+import inspect
+from typing import Any, Callable, Coroutine, TypeVar
 
 T = TypeVar("T")
 
 
-def run_in_executor(coro: Coroutine[None, None, T]) -> T:
+def run_in_executor(obj: Callable[..., Any] | Coroutine[Any, Any, T]) -> T:
+    if callable(obj) and not inspect.iscoroutinefunction(obj):
+        return obj()
+
+    if inspect.iscoroutinefunction(obj):
+        obj = obj()
+
+    if not inspect.iscoroutine(obj):
+        return obj
+
     try:
         loop = asyncio.get_running_loop()
     except RuntimeError:
-        return asyncio.run(coro)
-    else:
-        return loop.run_until_complete(coro)
+        return asyncio.run(obj)
+
+    future = asyncio.run_coroutine_threadsafe(obj, loop)
+    return future.result()

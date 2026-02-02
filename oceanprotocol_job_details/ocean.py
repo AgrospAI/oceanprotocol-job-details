@@ -9,7 +9,7 @@ import aiofiles
 from pydantic import BaseModel, ConfigDict, Secret
 
 from oceanprotocol_job_details.domain import DDO, Files, Paths
-from oceanprotocol_job_details.executers import run_in_executor
+from oceanprotocol_job_details.executors import run_in_executor
 
 InputParametersT = TypeVar("InputParametersT", BaseModel, None)
 
