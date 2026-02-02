@@ -20,14 +20,10 @@ class FilesLoader:
     dids: list[str]
     """Input DIDs"""
 
-    transformation_did: InitVar[str | None] = None
+    transformation_did: str
     """DID for the transformation algorithm"""
 
-    _transformation_did: str = field(init=False)
-
-    def __post_init__(self, transformation_did: str | None) -> None:
-        object.__setattr__(self, "_transformation_did", transformation_did)
-
+    def __post_init__(self) -> None:
         assert self.dids, "Missing input DIDs"
 
     def calculate_path(self, did: str, path_type: Literal["input", "ddo"]) -> Path:
