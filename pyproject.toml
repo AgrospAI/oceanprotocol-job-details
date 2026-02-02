@@ -39,7 +39,8 @@ build-backend = "hatchling.build"
 include = ["oceanprotocol_job_details"]
 
 [tool.hatch.build.targets.wheel]
-include = ["oceanprotocol_job_details"]
+packages = ["oceanprotocol_job_details"]
+include = ["oceanprotocol_job_details/py.typed"]
 
 [tool.mypy]
 plugins = ["pydantic.mypy"]
