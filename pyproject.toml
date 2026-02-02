@@ -40,7 +40,9 @@ include = ["oceanprotocol_job_details"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["oceanprotocol_job_details"]
-include = ["oceanprotocol_job_details/py.typed"]
+
+[tool.hatch.build.targets.wheel.package-data]
+oceanprotocol_job_details = ["py.typed"]
 
 [tool.mypy]
 plugins = ["pydantic.mypy"]
