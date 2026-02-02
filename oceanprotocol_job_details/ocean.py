@@ -3,13 +3,13 @@ from __future__ import annotations
 import asyncio
 from functools import cached_property
 from pathlib import Path
-from types import NoneType
 from typing import Generator, Generic, Tuple, Type, TypeVar, final
 
 import aiofiles
 from pydantic import BaseModel, ConfigDict, Secret
 
 from oceanprotocol_job_details.domain import DDO, Files, Paths
+from oceanprotocol_job_details.executers import run_in_executor
 
 InputParametersT = TypeVar("InputParametersT", BaseModel, None)
 
@@ -33,7 +33,7 @@ class JobDetails(BaseModel, Generic[InputParametersT]):  # type: ignore[explicit
 
     @cached_property
     def input_parameters(self) -> InputParametersT | None:
-        return asyncio.run(self.ainput_parameters())
+        return run_in_executor(self.ainput_parameters())
 
     async def ainput_parameters(self) -> InputParametersT | None:
         if self.input_type is None:

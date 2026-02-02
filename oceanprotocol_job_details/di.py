@@ -1,4 +1,3 @@
-from types import NoneType
 from typing import Generic, TypeVar
 from dependency_injector import containers, providers
 from pydantic import BaseModel

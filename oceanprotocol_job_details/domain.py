@@ -1,7 +1,7 @@
 # mypy: disable-error-code=explicit-any
 from dataclasses import InitVar, dataclass, field
 from pathlib import Path
-from typing import Generator, List, Optional, Sequence, TypeAlias, TypeVar
+from typing import Generator, List, Optional, Sequence, TypeAlias
 
 from pydantic import BaseModel, ConfigDict, Field, JsonValue
 

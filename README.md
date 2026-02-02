@@ -6,9 +6,7 @@ A Python package to get details from OceanProtocol jobs
 
 ```bash
 pip install oceanprotocol-job-details
-```
-
-```bash
+#or
 uv add oceanprotocol-job-details
 ```
 
