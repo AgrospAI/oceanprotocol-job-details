@@ -16,9 +16,6 @@ class CustomParameters(BaseModel):
     isTrue: bool
 
 
-class EmptyParameters(BaseModel): ...
-
-
 @pytest.fixture(scope="session")
 def config():
     yield {
@@ -35,8 +32,12 @@ def job_details(config) -> Generator[JobDetails[CustomParameters], None, None]:
 
 
 @pytest.fixture(scope="session")
-def empty_job_details(config) -> Generator[JobDetails[EmptyParameters], None, None]:
-    yield load_job_details(config, EmptyParameters)
+def empty_job_details(config) -> Generator[JobDetails[None], None, None]:
+    yield load_job_details(config)
+
+
+def test_minimal_config():
+    assert load_job_details({"base_dir": "./_data", "transformation_did": "1234567890"})
 
 
 def test_files(job_details):
@@ -73,8 +74,7 @@ def test_algorithm_custom_parameters(job_details):
 
 
 def test_empty_custom_parameters(empty_job_details):
-    custom_input_keys = empty_job_details.input_parameters.model_dump().keys()
-    assert len(custom_input_keys) == 0, "There should be no input parameters"
+    assert empty_job_details.input_parameters is None, "Input Parameters should be None"
 
 
 def test_stringified_dict_custom_parameters(config):

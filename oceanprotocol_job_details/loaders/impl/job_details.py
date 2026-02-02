@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from types import NoneType
 from typing import Generic, Type, TypeVar, final
 
 from pydantic import BaseModel
@@ -6,7 +7,7 @@ from pydantic import BaseModel
 from oceanprotocol_job_details.domain import DDO, Files, Paths
 from oceanprotocol_job_details.ocean import JobDetails
 
-T = TypeVar("T", bound=BaseModel)
+T = TypeVar("T", BaseModel, None)
 
 
 @final

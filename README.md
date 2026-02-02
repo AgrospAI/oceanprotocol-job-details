@@ -16,17 +16,15 @@ uv add oceanprotocol-job-details
 
 As a simple library, we only need to import `load_job_details` and run it. It will:
 
-1. Fetch the needed parameters to populate the `JobDetails` instance from the environment variables or use the passed values to the function.
-1. Look for the files corresponding to the passed DIDs in the filesystem according to the [Ocean Protocol Structure](#oceanprotocol-structure) and load them into the `JobDetails` instance.
+1. Read from disk the needed parameters to populate the `JobDetails` from the given `base_dir`. Looking for the files corresponding to the passed DIDs in the filesystem according to the [Ocean Protocol Structure](#oceanprotocol-structure).
+2. If given a `InputParameters` type that inherits from `pydantic.BaseModel`, it will create an instance from the environment variables.
 
 ### Minimal Example
 
 ```python
 from oceanprotocol_job_details import load_job_details
 
-class InputParameters(BaseModel): ...
-
-job_details = load_job_details({}, InputParameters)
+job_details = load_job_details({"base_dir": "...", "transformation_did": "..."})
 ```
 
 ### Custom Input Parameters
@@ -47,7 +45,7 @@ class InputParameters(BaseModel):
     foo: Foo
 
 
-job_details = load_job_details({}, InputParameters)
+job_details = load_job_details({"base_dir": "...", "transformation_did": "..."}, InputParameters)
 
 # Usage
 job_details.input_parameters.foo
@@ -62,7 +60,7 @@ The values to fill the custom `InputParameters` will be parsed from the `algoCus
 from oceanprotocol_job_details import load_job_details
 
 
-job_details = load_job_details
+job_details = load_job_details(...)
 
 for idx, file_path in job_details.inputs():
     ...

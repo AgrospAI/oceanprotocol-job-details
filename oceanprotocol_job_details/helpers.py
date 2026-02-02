@@ -6,7 +6,7 @@ from oceanprotocol_job_details.di import Container
 from oceanprotocol_job_details.ocean import JobDetails
 from oceanprotocol_job_details.settings import JobSettings
 
-InputParametersT = TypeVar("InputParametersT", bound=BaseModel)
+InputParametersT = TypeVar("InputParametersT", BaseModel, None)
 
 
 def create_container(config: Dict[str, Any]) -> Container[InputParametersT]:  # type: ignore[explicit-any]
@@ -18,8 +18,8 @@ def create_container(config: Dict[str, Any]) -> Container[InputParametersT]:  # 
 
 
 def load_job_details(
-    config: Dict[str, JsonValue],
-    input_type: Type[InputParametersT],
+    config: Dict[str, JsonValue] = {},
+    input_type: Type[InputParametersT] | None = None,
 ) -> JobDetails[InputParametersT]:
     """
     Load JobDetails for a given input_type using the config.

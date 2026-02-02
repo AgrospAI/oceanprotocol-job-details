@@ -1,3 +1,4 @@
+from types import NoneType
 from typing import Generic, TypeVar
 from dependency_injector import containers, providers
 from pydantic import BaseModel
@@ -8,7 +9,7 @@ from oceanprotocol_job_details.loaders.impl.job_details import JobDetailsLoader
 from oceanprotocol_job_details.domain import Paths
 
 
-InputParametersT = TypeVar("InputParametersT", bound=BaseModel)
+InputParametersT = TypeVar("InputParametersT", BaseModel, None)
 
 
 class Container(containers.DeclarativeContainer, Generic[InputParametersT]):
