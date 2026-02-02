@@ -23,7 +23,10 @@ class JobSettings(BaseSettings):  # type: ignore[explicit-any]
 
     @field_validator("dids", mode="before")
     @classmethod
-    def split_dids(cls, v: list[str] | str) -> list[str]:
+    def split_dids(cls, v: list[str] | str | None) -> list[str]:
+        if v is None:
+            return []
+
         if isinstance(v, str):
             data = orjson.loads(v)
             assert isinstance(data, list)
@@ -33,5 +36,7 @@ class JobSettings(BaseSettings):  # type: ignore[explicit-any]
     @model_validator(mode="after")
     def validate_dids(self) -> Self:
         if not self.dids:
-            self.dids.extend([f.name for f in (self.base_dir / "ddos").glob("*")])
+            self.dids.extend(
+                [f.name for f in (self.base_dir / "ddos").glob("*") if f.is_file()]
+            )
         return self
