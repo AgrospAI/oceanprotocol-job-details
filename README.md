@@ -46,8 +46,9 @@ class InputParameters(BaseModel):
 job_details = load_job_details({"base_dir": "...", "transformation_did": "..."}, InputParameters)
 
 # Usage
-job_details.input_parameters.foo
-job_details.input_parameters.foo.bar
+parameters = await job_details.input_parameters()
+parameters.foo
+parameters.foo.bar
 ```
 
 The values to fill the custom `InputParameters` will be parsed from the `algoCustomData.json` located next to the input data directories.

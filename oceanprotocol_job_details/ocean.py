@@ -24,6 +24,8 @@ class JobDetails(BaseModel, Generic[InputParametersT]):  # type: ignore[explicit
 
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
+    _input_parameters: InputParametersT | None = None
+
     def inputs(self) -> Generator[Tuple[int, Path], None, None]:
         yield from (
             (idx, file)
@@ -31,11 +33,13 @@ class JobDetails(BaseModel, Generic[InputParametersT]):  # type: ignore[explicit
             for file in files.input_files
         )
 
-    @cached_property
-    def input_parameters(self) -> InputParametersT | None:
-        return run_in_executor(self.ainput_parameters())
+    async def input_parameters(self) -> InputParametersT:
+        if self._input_parameters is None:
+            input_parameters = await self.ainput_parameters()
+            object.__setattr__(self, "_input_parameters", input_parameters)
+        return self._input_parameters
 
-    async def ainput_parameters(self) -> InputParametersT | None:
+    async def ainput_parameters(self) -> InputParametersT:
         if self.input_type is None:
             return None
 

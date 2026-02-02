@@ -5,20 +5,21 @@ from typing import Any, Callable, Coroutine, TypeVar
 T = TypeVar("T")
 
 
-def run_in_executor(obj: Callable[..., Any] | Coroutine[Any, Any, T]) -> T:
-    if callable(obj) and not inspect.iscoroutinefunction(obj):
-        return obj()
-
+async def run_in_executor(
+    obj: Callable[..., T]
+    | Callable[..., Coroutine[Any, Any, T]]
+    | Coroutine[Any, Any, T],
+    *args,
+    **kwargs,
+) -> T:
     if inspect.iscoroutinefunction(obj):
-        obj = obj()
+        return await obj(*args, **kwargs)
 
-    if not inspect.iscoroutine(obj):
-        return obj
+    if inspect.iscoroutine(obj):
+        return await obj
 
-    try:
+    if callable(obj):
         loop = asyncio.get_running_loop()
-    except RuntimeError:
-        return asyncio.run(obj)
+        return await loop.run_in_executor(None, obj, *args, **kwargs)
 
-    future = asyncio.run_coroutine_threadsafe(obj, loop)
-    return future.result()
+    return obj

@@ -64,20 +64,25 @@ def test_ddo(job_details):
     assert ddo_keys == loaded_ddo_keys, "DDO keys mismatch. "
 
 
-def test_algorithm_custom_parameters(job_details):
-    assert job_details.input_parameters is not None
-    assert len(job_details.input_parameters.model_dump().keys()) == 2
-    assert job_details.input_parameters.isTrue
-    assert job_details.input_parameters.isTrue is True
-    assert job_details.input_parameters.example
-    assert job_details.input_parameters.example == "data"
+@pytest.mark.asyncio
+async def test_algorithm_custom_parameters(job_details):
+    parameters = await job_details.input_parameters()
+    assert parameters is not None
+    assert len(parameters.model_dump().keys()) == 2
+    assert parameters.isTrue
+    assert parameters.isTrue is True
+    assert parameters.example
+    assert parameters.example == "data"
 
 
-def test_empty_custom_parameters(empty_job_details):
-    assert empty_job_details.input_parameters is None, "Input Parameters should be None"
+@pytest.mark.asyncio
+async def test_empty_custom_parameters(empty_job_details):
+    parameters = await empty_job_details.input_parameters()
+    assert parameters is None, "Input Parameters should be None"
 
 
-def test_stringified_dict_custom_parameters(config):
+@pytest.mark.asyncio
+async def test_stringified_dict_custom_parameters(config):
     # Create a temporary directory to hold custom parameter file
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_path = Path(tmp_dir)
@@ -103,8 +108,10 @@ def test_stringified_dict_custom_parameters(config):
         details = load_job_details(config, CustomParameters)
 
         # Ensure stringified JSON is parsed correctly
-        assert details.input_parameters.example == "data"
-        assert details.input_parameters.isTrue is True
+
+        parameters = await details.input_parameters()
+        assert parameters.example == "data"
+        assert parameters.isTrue is True
 
 
 def test_yielding_files(job_details):

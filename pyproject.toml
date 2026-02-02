@@ -27,6 +27,8 @@ Homepage = "https://github.com/AgrospAI/oceanprotocol-job-details"
 Issues = "https://github.com/AgrospAI/oceanprotocol-job-details/issues"
 
 [tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 log_level = "INFO"
 pythonpath = "oceanprotocol_job_details"
 log_cli = true
@@ -51,4 +53,9 @@ warn_return_any = true
 disallow_any_explicit = true
 
 [dependency-groups]
-dev = ["mypy>=1.15.0", "pytest>=8.3.4", "types-aiofiles>=25.1.0.20251011"]
+dev = [
+    "mypy>=1.15.0",
+    "pytest>=8.3.4",
+    "pytest-asyncio>=1.3.0",
+    "types-aiofiles>=25.1.0.20251011",
+]
