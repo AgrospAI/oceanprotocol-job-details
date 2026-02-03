@@ -52,6 +52,21 @@ def test_files(job_details):
 
     assert job_details.files[0], "Can't access files by index"
 
+    outputs = job_details.paths.outputs.glob("*")
+    logs = job_details.paths.logs.glob("*")
+
+    assert len(list(outputs)) == 0
+    assert len(list(logs)) == 1, "There should be one log"
+
+
+def test_empty_dids(config):
+    config = config.copy()
+    config.pop("dids")
+
+    job_details = load_job_details(config)
+    files = list(job_details.inputs())
+    assert len(files) == 1
+
 
 @pytest.mark.asyncio
 async def test_ddo(job_details):

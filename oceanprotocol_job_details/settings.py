@@ -5,7 +5,7 @@ from pathlib import Path
 
 if sys.version_info >= (3, 11):
     from typing import Self
-else:
+else:  # pragma: no cover
     from typing_extensions import Self
 
 import orjson
@@ -28,10 +28,7 @@ class JobSettings(BaseSettings):  # type: ignore[explicit-any]
 
     @field_validator("dids", mode="before")
     @classmethod
-    def split_dids(cls, v: list[str] | str | None) -> list[str]:
-        if v is None:
-            return []
-
+    def split_dids(cls, v: list[str] | str) -> list[str]:
         if isinstance(v, str):
             data = orjson.loads(v)
             assert isinstance(data, list)

@@ -20,9 +20,16 @@ async def async_add(x: int, y: int) -> int:
     return x + y
 
 
-async def async_sleep_and_append(log: list[str], value: str) -> None:
+async def async_sleep_and_append(log: list[str], value: str):
     await asyncio.sleep(0.01)
     log.append(value)
+
+
+@pytest.mark.asyncio
+async def test_executor_on_value():
+    value = 5
+    result = await run_in_executor(value)
+    assert result == value
 
 
 @pytest.mark.asyncio
