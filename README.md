@@ -1,6 +1,9 @@
-A Python package to get details from OceanProtocol jobs
+# OceanProtocol Job Details
 
----
+[![PyPI](https://img.shields.io/pypi/v/oceanprotocol-job-details?label=pypi&style=flat-square)](https://pypi.org/project/oceanprotocol-job-details/)
+![Coverage](./coverage.svg)
+
+A Python package to get details from OceanProtocol jobs
 
 ## Installation
 
