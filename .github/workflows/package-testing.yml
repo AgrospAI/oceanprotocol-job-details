@@ -30,7 +30,7 @@ jobs:
       run: uv python install ${{ matrix.python-version }}
 
     - name: Run tests
-      run: uv run pytest
+      run: uv run pytest --cov=oceanprotocol_job_details
 
     - name: Generate coverage badge
       if: github.event_name == 'push' && github.ref == 'refs/heads/main' && matrix.python-version == '3.13'

@@ -1,7 +1,12 @@
 # mypy: disable-error-code=call-overload
+import sys
 from logging import Logger, getLogger
 from pathlib import Path
-from typing import Self
+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 import orjson
 from pydantic import Field, Secret, field_validator, model_validator
