@@ -1,29 +1,28 @@
-from dataclasses import dataclass, field
-from types import NoneType
+from dataclasses import dataclass
 from typing import Generic, Type, TypeVar, final
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Secret
 
-from oceanprotocol_job_details.domain import DDO, Files, Paths
+from oceanprotocol_job_details.domain import DDOMetadata, Files, Paths
 from oceanprotocol_job_details.ocean import JobDetails
 
-T = TypeVar("T", BaseModel, None)
+InputParameterT = TypeVar("InputParameterT", bound=BaseModel)
 
 
 @final
 @dataclass(frozen=True)
-class JobDetailsLoader(Generic[T]):
-    input_type: Type[T] = field(repr=False)
+class JobDetailsLoader(Generic[InputParameterT]):
+    input_type: Type[InputParameterT] | None
     files: Files
-    secret: str
+    secret: Secret[str] | None
     paths: Paths
-    ddos: list[DDO]
+    metadata: DDOMetadata
 
-    def load(self) -> JobDetails[T]:
-        return JobDetails[T](
+    def load(self) -> JobDetails[InputParameterT]:
+        return JobDetails[InputParameterT](
             files=self.files,
             secret=self.secret,
-            ddos=self.ddos,
+            metadata=self.metadata,
             paths=self.paths,
             input_type=self.input_type,
         )

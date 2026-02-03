@@ -6,7 +6,7 @@ from oceanprotocol_job_details.di import Container
 from oceanprotocol_job_details.ocean import JobDetails
 from oceanprotocol_job_details.settings import JobSettings
 
-InputParametersT = TypeVar("InputParametersT", BaseModel, None)
+InputParametersT = TypeVar("InputParametersT", bound=BaseModel)
 
 
 def create_container(config: Dict[str, Any]) -> Container[InputParametersT]:  # type: ignore[explicit-any]

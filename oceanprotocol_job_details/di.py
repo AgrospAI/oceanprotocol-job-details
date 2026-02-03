@@ -8,7 +8,7 @@ from oceanprotocol_job_details.loaders.impl.job_details import JobDetailsLoader
 from oceanprotocol_job_details.domain import Paths
 
 
-InputParametersT = TypeVar("InputParametersT", BaseModel, None)
+InputParametersT = TypeVar("InputParametersT", bound=BaseModel)
 
 
 class Container(containers.DeclarativeContainer, Generic[InputParametersT]):
@@ -26,7 +26,7 @@ class Container(containers.DeclarativeContainer, Generic[InputParametersT]):
 
     files = providers.Factory(lambda loader: loader.load(), loader=file_loader)
     ddo_loader = providers.Factory(DDOLoader, files=files)
-    ddos = providers.Factory(lambda loader: loader.load(), loader=ddo_loader)
+    metadata = providers.Factory(lambda loader: loader.load(), loader=ddo_loader)
 
     job_details_loader: providers.Factory[JobDetailsLoader[InputParametersT]] = (
         providers.Factory(
@@ -34,6 +34,6 @@ class Container(containers.DeclarativeContainer, Generic[InputParametersT]):
             files=files,
             secret=config.secret,
             paths=paths,
-            ddos=ddos,
+            metadata=metadata,
         )
     )

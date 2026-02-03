@@ -71,7 +71,7 @@ _, file_path = next(job_details.inputs())
 
 ```bash
 data        # Root /data directory
-├── ddos    # Contains the loaded dataset's DDO
+├── ddos    # Contains the loaded dataset's DDO (metadata)
 │   ├── 17feb...e42 # DDO file
 │   └── ... # One DDO per loaded dataset
 ├── inputs  # Datasets dir

@@ -4,6 +4,8 @@ import tempfile
 from pathlib import Path
 from typing import Generator
 
+import aiofiles
+import orjson
 import pytest
 from pydantic import BaseModel
 
@@ -51,17 +53,23 @@ def test_files(job_details):
     assert job_details.files[0], "Can't access files by index"
 
 
-def test_ddo(job_details):
-    assert job_details.ddos
-    assert len(job_details.ddos) == 1, "There should be exactly one detected DDO"
+@pytest.mark.asyncio
+async def test_ddo(job_details):
+    ddo = job_details.metadata.items()
+
+    assert len(ddo) == 1, "There should be exactly one detected DDO"
 
     excluded_keys = ["accessDetails"]
-    with open(job_details.files[0].ddo) as ddo_file:
-        ddo_keys = list(json.loads(ddo_file.read()).keys())
-        ddo_keys = [key for key in ddo_keys if key not in excluded_keys]
 
-    loaded_ddo_keys = list(job_details.ddos[0].model_dump(by_alias=True).keys())
-    assert ddo_keys == loaded_ddo_keys, "DDO keys mismatch. "
+    for f in job_details.files:
+        async with aiofiles.open(f.ddo, "r") as ddo_file:
+            ddo_keys = list(orjson.loads(await ddo_file.read()).keys())
+            ddo_keys = [key for key in ddo_keys if key not in excluded_keys]
+
+            loaded_ddo_keys = list(
+                job_details.metadata[f.did].model_dump(by_alias=True).keys()
+            )
+            assert ddo_keys == loaded_ddo_keys, "DDO keys mismatch"
 
 
 @pytest.mark.asyncio
