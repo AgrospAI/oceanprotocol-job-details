@@ -1,6 +1,6 @@
 from dataclasses import InitVar, dataclass, field
 from pathlib import Path
-from typing import Dict, Generator, List, Optional, Sequence, TypeAlias
+from typing import Dict, Generator, List, Sequence, TypeAlias
 
 from oceanprotocol_job_details.domain.ddo import DDO
 
@@ -36,16 +36,11 @@ Files: TypeAlias = Sequence[DIDPaths]
 class Paths:
     """Configuration class for the Ocean Protocol Job Details"""
 
-    base_dir: InitVar[Optional[Path]] = None
-
-    _base: Path = field(init=False, repr=False)
-
-    def __post_init__(self, base_dir: Path | None = None) -> None:
-        object.__setattr__(self, "_base", base_dir if base_dir else Path("/data"))
+    base_dir: Path = field(default_factory=lambda: Path("/data"))
 
     @property
     def data(self) -> Path:
-        return self._base
+        return self.base_dir
 
     @property
     def inputs(self) -> Path:
