@@ -293,7 +293,7 @@ wheels = [
 
 [[package]]
 name = "oceanprotocol-job-details"
-version = "0.3.18"
+version = "0.3.20"
 source = { editable = "." }
 dependencies = [
     { name = "aiofiles" },
