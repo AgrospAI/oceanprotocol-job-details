@@ -15,8 +15,8 @@ class JobDetails(BaseModel, Generic[InputParametersT]):  # type: ignore[explicit
     files: Files
     metadata: DDOMetadata
     paths: Paths
-    input_type: Type[InputParametersT] | None
-    secret: Secret[str] | None
+    input_type: Type[InputParametersT] | None = None
+    secret: Secret[str] | None = None
 
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
