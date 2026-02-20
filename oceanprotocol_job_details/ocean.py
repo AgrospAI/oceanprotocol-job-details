@@ -11,7 +11,7 @@ from returns.result import Failure, Result, Success
 from oceanprotocol_job_details.domain import DDOMetadata, Files, Paths
 from oceanprotocol_job_details.exceptions import JobDetailsError
 
-InputParametersT = TypeVar("InputParametersT", bound=BaseModel)
+InputParametersT = TypeVar("InputParametersT", bound=BaseModel | None)
 
 
 def read_input_parameters(
@@ -37,7 +37,8 @@ def read_input_parameters(
         return Failure(JobDetailsError("Algorithm custom input parameters is empty"))
 
     try:
-        return Success(input_type.model_validate_json(raw))
+        assert issubclass(input_type, BaseModel)
+        return Success(input_type.model_validate_json(raw))  # type: ignore[arg-type]
     except ValidationError as error:
         return Failure(JobDetailsError(__cause__=error))
 
@@ -66,7 +67,8 @@ async def aread_input_parameters(
         return IOFailure(JobDetailsError("Algorithm custom input parameters is empty"))
 
     try:
-        return IOSuccess(input_type.model_validate_json(raw))
+        assert issubclass(input_type, BaseModel)
+        return IOSuccess(input_type.model_validate_json(raw))  # type: ignore[arg-type]
     except ValidationError as error:
         return IOFailure(JobDetailsError(__cause__=error))
 

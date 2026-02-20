@@ -8,7 +8,7 @@ from oceanprotocol_job_details.loaders.impl.job_details import JobDetailsLoader
 from oceanprotocol_job_details.domain import Paths
 
 
-InputParametersT = TypeVar("InputParametersT", bound=BaseModel)
+InputParametersT = TypeVar("InputParametersT", bound=BaseModel | None)
 
 
 class Container(containers.DeclarativeContainer, Generic[InputParametersT]):

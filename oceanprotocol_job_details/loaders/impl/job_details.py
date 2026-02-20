@@ -6,7 +6,7 @@ from pydantic import BaseModel, Secret
 from oceanprotocol_job_details.domain import DDOMetadata, Files, Paths
 from oceanprotocol_job_details.ocean import JobDetails
 
-InputParameterT = TypeVar("InputParameterT", bound=BaseModel)
+InputParameterT = TypeVar("InputParameterT", bound=BaseModel | None)
 
 
 @final

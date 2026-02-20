@@ -12,7 +12,7 @@ from oceanprotocol_job_details.ocean import (
 )
 from oceanprotocol_job_details.settings import JobSettings
 
-InputParametersT = TypeVar("InputParametersT", bound=BaseModel)
+InputParametersT = TypeVar("InputParametersT", bound=BaseModel | None)
 EmptyInputParameters: TypeAlias = BaseModel
 
 
