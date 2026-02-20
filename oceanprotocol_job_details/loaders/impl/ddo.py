@@ -2,8 +2,6 @@ from dataclasses import InitVar, dataclass, field
 from pathlib import Path
 from typing import List, Tuple, final
 
-import orjson
-
 from oceanprotocol_job_details.domain import DDO, DID, DDOMetadata, Files
 
 
@@ -21,6 +19,5 @@ class DDOLoader:
 
     def load(self) -> DDOMetadata:
         return {
-            did: DDO.model_validate(orjson.loads(path.read_bytes()))
-            for did, path in self._files
+            did: DDO.model_validate_json(path.read_bytes()) for did, path in self._files
         }

@@ -1,4 +1,3 @@
-# pragma: no cover
 from typing import Protocol, TypeVar
 
 T = TypeVar("T", covariant=True)

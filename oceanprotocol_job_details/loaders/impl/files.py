@@ -38,7 +38,7 @@ class FilesLoader:
             DIDPaths(
                 did=did,
                 ddo=self.calculate_path(did, "ddo"),
-                files=self.calculate_path(did, "input").iterdir(),
+                input_files=list(self.calculate_path(did, "input").glob("*")),
             )
             for did in self.dids
         ]

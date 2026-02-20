@@ -1,9 +1,11 @@
 # mypy: disable-error-code=explicit-any
 import asyncio
 import inspect
-from functools import partial
-from typing import Any, Callable, Coroutine, TypeGuard, TypeVar, cast
+from typing import Any, Callable, Coroutine, TypeGuard, TypeVar, overload
 
+from typing_extensions import ParamSpec
+
+P = ParamSpec("P")
 T = TypeVar("T")
 
 
@@ -17,24 +19,41 @@ def is_coro(obj: Any) -> TypeGuard[Coroutine[Any, Any, T]]:
     return inspect.iscoroutine(obj)
 
 
+@overload
 async def run_in_executor(
-    obj: Callable[..., T]
-    | Callable[..., Coroutine[Any, Any, T]]
-    | Coroutine[Any, Any, T],
+    obj: Coroutine[Any, Any, T],
+) -> T: ...
+
+
+@overload
+async def run_in_executor(
+    obj: Callable[P, Coroutine[Any, Any, T]],
+    *args: P.args,
+    **kwargs: P.kwargs,
+) -> T: ...
+
+
+@overload
+async def run_in_executor(
+    obj: Callable[P, T],
+    *args: P.args,
+    **kwargs: P.kwargs,
+) -> T: ...
+
+
+async def run_in_executor(
+    obj: Any,
     *args: Any,
     **kwargs: Any,
-) -> T:
+) -> Any:
     if is_coro_function(obj):
         return await obj(*args, **kwargs)
 
     if is_coro(obj):
         return await obj
 
-    if callable(obj):
-        loop = asyncio.get_running_loop()
-
-        # just to comply with mypy
-        func = partial(obj, *args, **kwargs)
-        return await loop.run_in_executor(None, cast(Callable[[], T], func))
-
-    return cast(T, obj)
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(
+        None,
+        lambda: obj(*args, **kwargs),
+    )

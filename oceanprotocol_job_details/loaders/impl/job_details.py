@@ -12,11 +12,11 @@ InputParameterT = TypeVar("InputParameterT", bound=BaseModel)
 @final
 @dataclass(frozen=True)
 class JobDetailsLoader(Generic[InputParameterT]):
-    input_type: Type[InputParameterT] | None
     files: Files
     secret: Secret[str] | None
     paths: Paths
     metadata: DDOMetadata
+    input_type: Type[InputParameterT] | None = None
 
     def load(self) -> JobDetails[InputParameterT]:
         return JobDetails[InputParameterT](

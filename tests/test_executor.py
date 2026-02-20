@@ -20,39 +20,32 @@ async def async_add(x: int, y: int) -> int:
     return x + y
 
 
-async def async_sleep_and_append(log: list[str], value: str):
+async def async_sleep_and_append(log: list[str], value: str) -> None:
     await asyncio.sleep(0.01)
     log.append(value)
 
 
 @pytest.mark.asyncio
-async def test_executor_on_value():
-    value = 5
-    result = await run_in_executor(value)
-    assert result == value
-
-
-@pytest.mark.asyncio
-async def test_sync_callable_runs_in_executor():
-    result = await run_in_executor(sync_add, 2, 3)
+async def test_sync_callable_runs_in_executor() -> None:
+    result: int = await run_in_executor(sync_add, 2, 3)
     assert result == 5
 
 
 @pytest.mark.asyncio
-async def test_async_callable_runs():
-    result = await run_in_executor(async_add, 4, 6)
+async def test_async_callable_runs() -> None:
+    result: int = await run_in_executor(async_add, 4, 6)
     assert result == 10
 
 
 @pytest.mark.asyncio
-async def test_coroutine_object_runs():
+async def test_coroutine_object_runs() -> None:
     coro = async_add(1, 2)
-    result = await run_in_executor(coro)
+    result: int = await run_in_executor(coro)
     assert result == 3
 
 
 @pytest.mark.asyncio
-async def test_execution_order_is_preserved():
+async def test_execution_order_is_preserved() -> None:
     log: list[str] = []
 
     await run_in_executor(sync_sleep_and_append, log, "validate")
@@ -63,7 +56,7 @@ async def test_execution_order_is_preserved():
 
 
 @pytest.mark.asyncio
-async def test_mixed_sync_and_async_order():
+async def test_mixed_sync_and_async_order() -> None:
     log: list[str] = []
 
     await run_in_executor(sync_sleep_and_append, log, "A")
@@ -74,7 +67,7 @@ async def test_mixed_sync_and_async_order():
 
 
 @pytest.mark.asyncio
-async def test_exception_propagates_from_sync():
+async def test_exception_propagates_from_sync() -> None:
     def boom() -> None:
         raise ValueError("sync error")
 
@@ -83,7 +76,7 @@ async def test_exception_propagates_from_sync():
 
 
 @pytest.mark.asyncio
-async def test_exception_propagates_from_async():
+async def test_exception_propagates_from_async() -> None:
     async def boom() -> None:
         raise RuntimeError("async error")
 

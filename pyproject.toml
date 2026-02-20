@@ -1,6 +1,6 @@
 [project]
 name = "oceanprotocol-job-details"
-version = "0.3.20"
+version = "0.4.0"
 description = "A Python package to get details from OceanProtocol jobs"
 authors = [
     { name = "Agrospai", email = "agrospai@udl.cat" },
@@ -17,9 +17,11 @@ classifiers = [
 dependencies = [
     "aiofiles>=25.1.0",
     "dependency-injector>=4.48.2",
+    "mypy[faster-cache]>=1.15.0",
     "orjson>=3.11.3",
     "pydantic>=2.12.5",
     "pydantic-settings>=2.12.0",
+    "returns[compatible-mypy]>=0.26.0",
 ]
 
 [project.urls]
@@ -48,7 +50,7 @@ oceanprotocol_job_details = ["py.typed"]
 
 [tool.mypy]
 python_version = "3.10"
-plugins = ["pydantic.mypy"]
+plugins = ["returns.contrib.mypy.returns_plugin", "pydantic.mypy"]
 strict = true
 warn_return_any = true
 disallow_any_explicit = true
@@ -66,4 +68,7 @@ dev = [
 ]
 
 [tool.coverage.run]
-omit = ["oceanprotocol_job_details/loaders/loader.py"]
+omit = [
+    "oceanprotocol_job_details/loaders/loader.py",
+    "oceanprotocol_job_details/exceptions.py",
+]
