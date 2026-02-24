@@ -88,14 +88,3 @@ def load_empty_job_details(
     job_details = container.job_details_loader(input_type=None).load()
 
     return EmptyJobDetails.model_validate(job_details, from_attributes=True)
-
-
-async def aload_empty_job_details(
-    config: Dict[str, JsonValue] = {},
-) -> EmptyJobDetails[EmptyInputParameters]:
-    """
-    Load a EmptyJobDetails using the config.
-    """
-
-    # Since no code here is async we will just use the sync implementation
-    return load_empty_job_details(config)

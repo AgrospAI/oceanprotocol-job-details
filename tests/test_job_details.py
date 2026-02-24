@@ -15,7 +15,6 @@ from returns.result import Failure
 from oceanprotocol_job_details.di import InputParametersT
 from oceanprotocol_job_details.exceptions import JobDetailsError
 from oceanprotocol_job_details.helpers import (
-    aload_empty_job_details,
     aload_parametrized_job_details,
     create_container,
     load_empty_job_details,
@@ -167,12 +166,6 @@ async def test_async_parametrized_job_details(config):
 def test_parametrized_job_details(config):
     job_details = load_parametrized_job_details(CustomParameters, config)
     assert isinstance(job_details, ParametrizedJobDetails)
-
-
-@pytest.mark.asyncio
-async def test_async_empty_job_details(config):
-    job_details = await aload_empty_job_details(config)
-    assert isinstance(job_details, EmptyJobDetails)
 
 
 def test_empty_custom_parameters(empty_job_details: EmptyJobDetails):
