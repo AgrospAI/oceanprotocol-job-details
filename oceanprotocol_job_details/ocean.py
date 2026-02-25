@@ -33,14 +33,16 @@ def read_input_parameters(
 
     raw = paths.algorithm_custom_parameters.read_text().strip()
 
-    if raw is None:
+    if not raw:
         return Failure(JobDetailsError("Algorithm custom input parameters is empty"))
 
     try:
         assert issubclass(input_type, BaseModel)
         return Success(input_type.model_validate_json(raw))  # type: ignore[arg-type]
     except ValidationError as error:
-        return Failure(JobDetailsError(__cause__=error))
+        exception = JobDetailsError("Validation failed for input parameters")
+        exception.__cause__ = error
+        return Failure(exception)
 
 
 async def aread_input_parameters(
@@ -63,14 +65,16 @@ async def aread_input_parameters(
     async with aiofiles.open(paths.algorithm_custom_parameters, "r") as f:
         raw = (await f.read()).strip()
 
-    if raw is None:
+    if not raw:
         return IOFailure(JobDetailsError("Algorithm custom input parameters is empty"))
 
     try:
         assert issubclass(input_type, BaseModel)
         return IOSuccess(input_type.model_validate_json(raw))  # type: ignore[arg-type]
     except ValidationError as error:
-        return IOFailure(JobDetailsError(__cause__=error))
+        exception = JobDetailsError("Validation failed for input parameters")
+        exception.__cause__ = error
+        return IOFailure(exception)
 
 
 class _BaseJobDetails(BaseModel, Generic[InputParametersT]):  # type: ignore[explicit-any]
@@ -134,7 +138,7 @@ class JobDetails(_BaseJobDetails[InputParametersT]):  # type: ignore[explicit-an
                     )
                 )
             case IOFailure(Failure(error)):
-                return IOFailure(JobDetailsError(__cause__=error))
+                return IOFailure(error)
 
     def read(  # type: ignore[return]
         self,
@@ -157,7 +161,7 @@ class JobDetails(_BaseJobDetails[InputParametersT]):  # type: ignore[explicit-an
                     )
                 )
             case Failure(error):
-                return Failure(JobDetailsError(__cause__=error))
+                return Failure(error)
 
 
 @final

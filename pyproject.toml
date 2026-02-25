@@ -54,6 +54,7 @@ plugins = ["returns.contrib.mypy.returns_plugin", "pydantic.mypy"]
 strict = true
 warn_return_any = true
 disallow_any_explicit = true
+exclude = "tests/"
 
 [dependency-groups]
 dev = [

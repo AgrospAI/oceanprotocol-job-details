@@ -1,225 +1,124 @@
-# type: ignore
-import json
-import shutil
-import tempfile
-from pathlib import Path
-from typing import Generator
+from typing import assert_never
+from unittest.mock import patch
 
-import aiofiles
-import orjson
 import pytest
-from pydantic import BaseModel
-from returns.io import IOFailure
-from returns.result import Failure
+from returns.io import IOFailure, IOSuccess
+from returns.result import Failure, Success
 
-from oceanprotocol_job_details.di import InputParametersT
+from oceanprotocol_job_details import ParametrizedJobDetails
 from oceanprotocol_job_details.exceptions import JobDetailsError
 from oceanprotocol_job_details.helpers import (
     aload_parametrized_job_details,
-    create_container,
     load_empty_job_details,
-    load_job_details,
     load_parametrized_job_details,
 )
-from oceanprotocol_job_details.ocean import (
-    EmptyJobDetails,
-    JobDetails,
-    ParametrizedJobDetails,
-)
+from oceanprotocol_job_details.ocean import EmptyJobDetails
+from tests.data import CustomParameters
 
 
-class CustomParameters(BaseModel):
-    example: str
-    isTrue: bool
+class TestJobDetails:
+    @patch("oceanprotocol_job_details.ocean.read_input_parameters")
+    def test_read_success(self, mock_read_func, job_details):
+        mock_params = CustomParameters(example="test", isTrue=True)
+        mock_read_func.return_value = Success(mock_params)
+
+        match job_details.read():
+            case Success(result):
+                assert isinstance(result, ParametrizedJobDetails)
+                assert result.input_parameters == mock_params
+            case _:
+                assert_never()
+
+    @patch("oceanprotocol_job_details.ocean.read_input_parameters")
+    def test_read_failure_propagation(self, mock_read_func, job_details):
+        cause = RuntimeError("asd")
+
+        inner_error = JobDetailsError("Original Error")
+        inner_error.__cause__ = cause
+        mock_read_func.return_value = Failure(inner_error)
+
+        match job_details.read():
+            case Failure(error):
+                assert error.__cause__ == cause
+            case _:
+                assert_never()
+
+    def test_read_no_input_type(self, job_details):
+        job_details = job_details.model_copy(update={"input_type": None})
+
+        match job_details.read():
+            case Failure(error):
+                assert "no input parameters" in str(error)
+            case _:
+                assert_never()
+
+    @pytest.mark.asyncio
+    @patch("oceanprotocol_job_details.ocean.aread_input_parameters")
+    async def test_aread_success(self, mock_aread_func, job_details):
+        mock_params = CustomParameters(example="async_test", isTrue=True)
+        mock_aread_func.return_value = IOSuccess(mock_params)
+
+        match await job_details.aread():
+            case IOSuccess(Success(result)):
+                assert result.input_parameters == mock_params
+            case _:
+                assert_never()
+
+    @pytest.mark.asyncio
+    @patch("oceanprotocol_job_details.ocean.aread_input_parameters")
+    async def test_aread_failure_propagation(self, mock_aread_func, job_details):
+        cause = RuntimeError("asd")
+
+        inner_error = JobDetailsError("Async Fail")
+        inner_error.__cause__ = cause
+        mock_aread_func.return_value = IOFailure(inner_error)
+
+        match await job_details.aread():
+            case IOFailure(Failure(error)):
+                assert error.__cause__ == cause
+            case _:
+                assert_never()
+
+    @pytest.mark.asyncio
+    async def test_aread_no_input_type(self, job_details):
+        job_details = job_details.model_copy(update={"input_type": None})
+
+        match await job_details.aread():
+            case IOFailure(Failure(error)):
+                assert "no input parameters" in str(error)
+            case _:
+                assert_never()
 
 
-@pytest.fixture(scope="session")
-def config():
-    yield {
-        "base_dir": "./_data",
-        "dids": '["17feb697190d9f5912e064307006c06019c766d35e4e3f239ebb69fb71096e42"]',
-        "secret": "a super secret secret",
-        "transformation_did": "1234567890",
-    }
+class TestJobDetailsLoaders:
+    def test_load_parametrized_job_details_success(self, config):
+        job_details = load_parametrized_job_details(CustomParameters, config)
+        assert isinstance(job_details, ParametrizedJobDetails)
 
-
-@pytest.fixture(scope="session")
-def job_details(
-    config,
-) -> Generator[ParametrizedJobDetails[CustomParameters], None, None]:
-    yield load_parametrized_job_details(
-        CustomParameters,
-        config,
+    @patch(
+        "oceanprotocol_job_details.ocean.JobDetails.read",
+        return_value=Failure(JobDetailsError("Mock Error")),
     )
+    def test_load_parametrized_job_details_failure_propagation(self, mock_read, config):
+        with pytest.raises(JobDetailsError):
+            _ = load_parametrized_job_details(CustomParameters, config)
 
+    def test_load_empty_job_details(self, config):
+        job_details = load_empty_job_details(config)
+        assert isinstance(job_details, EmptyJobDetails)
 
-@pytest.fixture(scope="session")
-def empty_job_details(
-    config,
-) -> Generator[EmptyJobDetails, None, None]:
-    yield load_empty_job_details(
-        config,
+    @pytest.mark.asyncio
+    async def test_aload_parametrized_job_details_success(self, config):
+        job_details = await aload_parametrized_job_details(CustomParameters, config)
+        assert isinstance(job_details, ParametrizedJobDetails)
+
+    @pytest.mark.asyncio
+    @patch(
+        "oceanprotocol_job_details.ocean.JobDetails.aread",
+        return_value=IOFailure(JobDetailsError("Mock Error")),
     )
-
-
-def test_minimal_config():
-    assert load_empty_job_details(
-        {
-            "base_dir": "./_data",
-            "transformation_did": "1234567890",
-        }
-    )
-
-
-def test_files(
-    job_details: ParametrizedJobDetails[InputParametersT],
-):
-    assert job_details.files, "There should be detected files"
-    assert len(job_details.files) == 1, "There should be exactly one detected file"
-    for file in job_details.files:
-        assert file.ddo, "There should be a DDO file"
-        assert len(file.input_files) == 1, "There should be exactly one detected file"
-
-    assert job_details.files[0], "Can't access files by index"
-
-    outputs = job_details.paths.outputs.glob("*")
-    logs = job_details.paths.logs.glob("*")
-
-    assert len(list(outputs)) == 0
-    assert len(list(logs)) == 1, "There should be one log"
-
-
-def test_empty_dids(config):
-    config = config.copy()
-    config.pop("dids")
-
-    job_details = load_empty_job_details(config)
-    files = list(job_details.inputs())
-    assert len(files) == 1
-
-
-@pytest.mark.asyncio
-async def test_ddo(job_details):
-    ddo = job_details.metadata.items()
-
-    assert len(ddo) == 1, "There should be exactly one detected DDO"
-
-    excluded_keys = ["accessDetails"]
-
-    for f in job_details.files:
-        async with aiofiles.open(f.ddo, "r") as ddo_file:
-            ddo_keys = list(orjson.loads(await ddo_file.read()).keys())
-            ddo_keys = [key for key in ddo_keys if key not in excluded_keys]
-
-            loaded_ddo_keys = list(
-                job_details.metadata[f.did].model_dump(by_alias=True).keys()
-            )
-            assert ddo_keys == loaded_ddo_keys, "DDO keys mismatch"
-
-
-def test_algorithm_custom_parameters(
-    job_details: ParametrizedJobDetails[InputParametersT],
-):
-    assert job_details.input_parameters is not None
-    assert len(job_details.input_parameters.model_dump().keys()) == 2
-    assert job_details.input_parameters.isTrue
-    assert job_details.input_parameters.isTrue is True
-    assert job_details.input_parameters.example
-    assert job_details.input_parameters.example == "data"
-
-
-def test_job_details(config):
-    job_details = load_job_details(None, config)
-    assert isinstance(job_details, JobDetails)
-
-
-def test_job_details_read_fails_on_no_input_type(config):
-    job_details = load_job_details(None, config)
-
-    assert isinstance(job_details.read(), Failure)
-
-
-@pytest.mark.asyncio
-async def test_job_details_aread_fails_on_no_input_type(config):
-    job_details = load_job_details(None, config)
-
-    assert isinstance(await job_details.aread(), IOFailure)
-
-
-def test_load_parametrized_job_details_fails_on_no_input_type(config):
-    with pytest.raises(JobDetailsError):
-        load_parametrized_job_details(None, config)
-
-
-@pytest.mark.asyncio
-async def test_aload_parametrized_job_details_fails_on_no_input_type(config):
-    with pytest.raises(JobDetailsError):
-        await aload_parametrized_job_details(None, config)
-
-
-@pytest.mark.asyncio
-async def test_async_parametrized_job_details(config):
-    job_details = await aload_parametrized_job_details(CustomParameters, config)
-    assert isinstance(job_details, ParametrizedJobDetails)
-
-
-def test_parametrized_job_details(config):
-    job_details = load_parametrized_job_details(CustomParameters, config)
-    assert isinstance(job_details, ParametrizedJobDetails)
-
-
-def test_empty_custom_parameters(empty_job_details: EmptyJobDetails):
-    assert empty_job_details.input_type is None, "Input Parameters should be None"
-
-
-def test_stringified_dict_custom_parameters(config):
-    # Create a temporary directory to hold custom parameter file
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        tmp_path = Path(tmp_dir)
-
-        # Copy original JobDetails data to the temp directory
-        original_base = Path(config["base_dir"])
-        shutil.copytree(original_base, tmp_path, dirs_exist_ok=True)
-
-        # Reconfigure container to use the temp directory
-        container = create_container({**config, "base_dir": tmp_path})
-
-        # Write a stringified JSON parameters file
-        paths = container.paths(base_dir=tmp_path)
-        paths.algorithm_custom_parameters.write_text(
-            json.dumps(
-                {
-                    "example": json.dumps("data"),  # stringified string
-                    "isTrue": json.dumps(True),  # stringified boolean
-                }
-            )
-        )
-
-        details = load_parametrized_job_details(CustomParameters, config)
-
-        # Ensure stringified JSON is parsed correctly
-
-        parameters = details.input_parameters
-        assert parameters.example == "data"
-        assert parameters.isTrue is True
-
-
-def test_yielding_files(
-    job_details: ParametrizedJobDetails[InputParametersT],
-):
-    files = list(job_details.inputs())
-
-    assert len(files) == 1
-    assert isinstance(files[0], tuple)
-
-    did, path = files[0]
-    assert did == "17feb697190d9f5912e064307006c06019c766d35e4e3f239ebb69fb71096e42"
-    assert path.exists() and path.is_file()
-
-
-def test_empty_config_defaults(
-    empty_job_details: EmptyJobDetails,
-):
-    assert "17feb697190d9f5912e064307006c06019c766d35e4e3f239ebb69fb71096e42" in [
-        f.did for f in empty_job_details.files
-    ], "Did not auto-detect DIDS"
+    async def test_aload_parametrized_job_details_failure_propagation(
+        self, mock_read, config
+    ):
+        with pytest.raises(JobDetailsError):
+            _ = await aload_parametrized_job_details(CustomParameters, config)
