@@ -1,5 +1,6 @@
 import json
-from typing import assert_never
+from typing_extensions import assert_never
+
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest

@@ -1,9 +1,9 @@
-from typing import assert_never
 from unittest.mock import patch
 
 import pytest
 from returns.io import IOFailure, IOSuccess
 from returns.result import Failure, Success
+from typing_extensions import assert_never
 
 from oceanprotocol_job_details import ParametrizedJobDetails
 from oceanprotocol_job_details.exceptions import JobDetailsError
