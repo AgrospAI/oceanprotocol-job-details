@@ -14,7 +14,7 @@ class TestDerived:
 
     @patch("pathlib.Path.exists", return_value=True)
     def test_did_paths_length(self, mock_exists):
-        paths = DIDPaths("", Path(), input_files=[""] * 67)
+        paths = DIDPaths("", Path(), input_files=[Path("")] * 67)
 
         assert len(paths) == 67
 
@@ -30,3 +30,4 @@ class TestDerived:
         assert (
             paths.algorithm_custom_parameters == base / "inputs" / "algoCustomData.json"
         )
+        assert paths.algorithm == base / "transformations" / "algorithm"

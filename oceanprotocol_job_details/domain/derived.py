@@ -54,6 +54,10 @@ class Paths:
         return self.data / "logs"
 
     @property
+    def algorithm(self) -> Path:
+        return self.data / "transformations" / "algorithm"
+
+    @property
     def algorithm_custom_parameters(self) -> Path:
         return self.inputs / "algoCustomData.json"
 
