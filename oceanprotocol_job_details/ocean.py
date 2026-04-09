@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Generator, Generic, Tuple, Type, TypeVar, final
+from typing import Generic, Iterator, Tuple, Type, TypeVar, final
 
 import aiofiles
 from pydantic import BaseModel, ConfigDict, Secret, ValidationError
@@ -10,8 +10,10 @@ from returns.result import Failure, Result, Success
 
 from oceanprotocol_job_details.domain import DDOMetadata, Files, Paths
 from oceanprotocol_job_details.exceptions import JobDetailsError
+from oceanprotocol_job_details.loaders.input_loader import InputLoader
 
 InputParametersT = TypeVar("InputParametersT", bound=BaseModel | None)
+T = TypeVar("T", bound=InputLoader)
 
 
 def read_input_parameters(
@@ -101,7 +103,7 @@ class _BaseJobDetails(BaseModel, Generic[InputParametersT]):  # type: ignore[exp
         from_attributes=True,
     )
 
-    def inputs(self) -> Generator[Tuple[str, Path], None, None]:
+    def inputs(self) -> Iterator[Tuple[str, Path]]:
         """
         Iterate through tuples containing the DID and the Path of each input file.
         The same DID may have multiple input files.
@@ -113,11 +115,13 @@ class _BaseJobDetails(BaseModel, Generic[InputParametersT]):  # type: ignore[exp
             for file in files.input_files
         )
 
+    # def read_inputs(self, dtype: Type[T]) -> Iterator[Tuple[str, T]]: ...
+
 
 class JobDetails(_BaseJobDetails[InputParametersT]):  # type: ignore[explicit-any]
     """Class holding the OceanProtocol job details."""
 
-    async def aread(  # type: ignore[return]
+    async def aread(
         self,
     ) -> IOResult[ParametrizedJobDetails[InputParametersT], JobDetailsError]:
         """Read the input parameters and get a ParametrizedJobDetails instance.
@@ -140,7 +144,10 @@ class JobDetails(_BaseJobDetails[InputParametersT]):  # type: ignore[explicit-an
             case IOFailure(Failure(error)):
                 return IOFailure(error)
 
-    def read(  # type: ignore[return]
+        # pragma: no cover
+        assert False, "unreachable"
+
+    def read(
         self,
     ) -> Result[ParametrizedJobDetails[InputParametersT], JobDetailsError]:
         """Read the input parameters and get a ParametrizedJobDetails instance.
@@ -162,6 +169,9 @@ class JobDetails(_BaseJobDetails[InputParametersT]):  # type: ignore[explicit-an
                 )
             case Failure(error):
                 return Failure(error)
+
+        # pragma: no cover
+        assert False, "Unreachable"
 
 
 @final

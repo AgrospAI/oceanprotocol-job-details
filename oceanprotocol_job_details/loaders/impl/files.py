@@ -1,16 +1,19 @@
-from __future__ import annotations
-
 from dataclasses import dataclass, field
 from logging import Logger
 from pathlib import Path
 from typing import Literal, final
 
+from typing_extensions import override
+
 from oceanprotocol_job_details.domain import DIDPaths, Files, Paths
+from oceanprotocol_job_details.loaders.loader import Loader
+from oceanprotocol_job_details.plugins import register
 
 
+@register("files")
 @final
 @dataclass(frozen=True)
-class FilesLoader:
+class FilesLoader(Loader[Files]):
     paths: Paths
     """Path configurations of the project"""
 
@@ -33,6 +36,7 @@ class FilesLoader:
             case "input":
                 return self.paths.inputs / did
 
+    @override
     def load(self) -> Files:
         return [
             DIDPaths(

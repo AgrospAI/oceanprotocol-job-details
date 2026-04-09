@@ -1,6 +1,4 @@
 import json
-from typing_extensions import assert_never
-
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -25,8 +23,6 @@ class TestReadInputParameters:
         match read_input_parameters(mock_paths, CustomParameters):
             case Failure(error):
                 assert "missing" in str(error)
-            case _:
-                assert_never()
 
     @patch("pathlib.Path.exists", return_value=True)
     @patch("pathlib.Path.read_text", return_value="")
@@ -37,8 +33,6 @@ class TestReadInputParameters:
         match read_input_parameters(mock_paths, CustomParameters):
             case Failure(error):
                 assert "empty" in str(error)
-            case _:
-                assert_never()
 
     def test_invalid_json_returns_validation_error(self):
         mock_paths = MagicMock()
@@ -51,8 +45,6 @@ class TestReadInputParameters:
             case Failure(error):
                 assert isinstance(error, JobDetailsError)
                 assert isinstance(error.__cause__, ValidationError)
-            case _:
-                assert_never()
 
     def test_valid_input_returns_success(self):
         mock_paths = MagicMock()
@@ -65,8 +57,6 @@ class TestReadInputParameters:
             case Success(result):
                 assert result.example == "data"
                 assert result.isTrue
-            case _:
-                assert_never()
 
 
 class TestAReadInputParameters:
@@ -79,8 +69,6 @@ class TestAReadInputParameters:
         match await aread_input_parameters(mock_paths, CustomParameters):
             case IOFailure(Failure(error)):
                 assert "missing" in str(error)
-            case _:
-                assert_never()
 
     @pytest.mark.asyncio
     @patch("pathlib.Path.exists", return_value=True)
@@ -96,8 +84,6 @@ class TestAReadInputParameters:
         match await aread_input_parameters(mock_paths, CustomParameters):
             case IOFailure(Failure(error)):
                 assert "empty" in str(error)
-            case _:
-                assert_never()
 
     @pytest.mark.asyncio
     @patch("aiofiles.open")
@@ -113,8 +99,6 @@ class TestAReadInputParameters:
             case IOFailure(Failure(error)):
                 assert isinstance(error, JobDetailsError)
                 assert isinstance(error.__cause__, ValidationError)
-            case _:
-                assert_never()
 
     @pytest.mark.asyncio
     @patch("aiofiles.open")
@@ -130,8 +114,6 @@ class TestAReadInputParameters:
             case IOSuccess(Success(result)):
                 assert result.example == "data"
                 assert result.isTrue
-            case _:
-                assert_never()
 
     def test_stringified_dict_custom_parameters_logic(job_details):
         """
