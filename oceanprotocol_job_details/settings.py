@@ -1,4 +1,3 @@
-# mypy: disable-error-code=call-overload
 import sys
 from logging import Logger, getLogger
 from pathlib import Path
@@ -13,7 +12,7 @@ from pydantic import Field, Secret, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class JobSettings(BaseSettings):  # type: ignore[explicit-any]
+class JobSettings(BaseSettings):
     base_dir: Path = Field(alias="BASE_DIR")
     dids: list[str] = Field(default_factory=list, alias="DIDS")
     transformation_did: str = Field(alias="TRANSFORMATION_DID")

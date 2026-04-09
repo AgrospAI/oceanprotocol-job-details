@@ -5,19 +5,17 @@ from typing import Generator, Generic, Tuple, Type, TypeVar, final
 
 import aiofiles
 from pydantic import BaseModel, ConfigDict, Secret, ValidationError
-from returns.io import IOFailure, IOResult, IOSuccess
-from returns.result import Failure, Result, Success
 
 from oceanprotocol_job_details.domain import DDOMetadata, Files, Paths
 from oceanprotocol_job_details.exceptions import JobDetailsError
 
-InputParametersT = TypeVar("InputParametersT", bound=BaseModel | None)
+InputParametersT = TypeVar("InputParametersT", bound=BaseModel)
 
 
 def read_input_parameters(
     paths: Paths,
     input_type: Type[InputParametersT],
-) -> Result[InputParametersT, JobDetailsError]:
+) -> InputParametersT | JobDetailsError:
     """Read the input parameters from the paths and validate with the given type.
 
     Args:
@@ -25,30 +23,30 @@ def read_input_parameters(
         input_type (Type[InputParametersT]): Pydantic BaseModel to validate the input parameters data.
 
     Returns:
-        Result[InputParametersT, JobDetailsError]: Result containing an InputParametersT instance or JobDetailsError
+        Union[InputParametersT, JobDetailsError]: InputParametersT instance or JobDetailsError
     """
 
     if not paths.algorithm_custom_parameters.exists():
-        return Failure(JobDetailsError("Algorithm custom input file missing"))
+        return JobDetailsError("Algorithm custom input file missing")
 
     raw = paths.algorithm_custom_parameters.read_text().strip()
 
     if not raw:
-        return Failure(JobDetailsError("Algorithm custom input parameters is empty"))
+        return JobDetailsError("Algorithm custom input parameters is empty")
 
     try:
         assert issubclass(input_type, BaseModel)
-        return Success(input_type.model_validate_json(raw))  # type: ignore[arg-type]
+        return input_type.model_validate_json(raw)
     except ValidationError as error:
         exception = JobDetailsError("Validation failed for input parameters")
         exception.__cause__ = error
-        return Failure(exception)
+        return exception
 
 
 async def aread_input_parameters(
     paths: Paths,
     input_type: Type[InputParametersT],
-) -> IOResult[InputParametersT, JobDetailsError]:
+) -> InputParametersT | JobDetailsError:
     """Read the input parameters from the paths and validate with the given type.
 
     Args:
@@ -56,25 +54,25 @@ async def aread_input_parameters(
         input_type (Type[InputParametersT]): Pydantic BaseModel to validate the input parameters data.
 
     Returns:
-        Result[InputParametersT, JobDetailsError]: Result containing an InputParametersT instance or JobDetailsError
+        Union[InputParametersT, JobDetailsError]: InputParametersT instance or JobDetailsError
     """
 
     if not paths.algorithm_custom_parameters.exists():
-        return IOFailure(JobDetailsError("Algorithm custom input file missing"))
+        return JobDetailsError("Algorithm custom input file missing")
 
     async with aiofiles.open(paths.algorithm_custom_parameters, "r") as f:
         raw = (await f.read()).strip()
 
     if not raw:
-        return IOFailure(JobDetailsError("Algorithm custom input parameters is empty"))
+        return JobDetailsError("Algorithm custom input parameters is empty")
 
     try:
         assert issubclass(input_type, BaseModel)
-        return IOSuccess(input_type.model_validate_json(raw))  # type: ignore[arg-type]
+        return input_type.model_validate_json(raw)
     except ValidationError as error:
         exception = JobDetailsError("Validation failed for input parameters")
         exception.__cause__ = error
-        return IOFailure(exception)
+        return exception
 
 
 class _BaseJobDetails(BaseModel, Generic[InputParametersT]):  # type: ignore[explicit-any]
@@ -117,51 +115,49 @@ class _BaseJobDetails(BaseModel, Generic[InputParametersT]):  # type: ignore[exp
 class JobDetails(_BaseJobDetails[InputParametersT]):  # type: ignore[explicit-any]
     """Class holding the OceanProtocol job details."""
 
-    async def aread(  # type: ignore[return]
+    async def aread(
         self,
-    ) -> IOResult[ParametrizedJobDetails[InputParametersT], JobDetailsError]:
+    ) -> ParametrizedJobDetails[InputParametersT] | JobDetailsError:
         """Read the input parameters and get a ParametrizedJobDetails instance.
 
         Returns:
-            IOResult[ParametrizedJobDetails[InputParametersT], JobDetailsError]: Success if the input_type is set.
+            Union[ParametrizedJobDetails[InputParametersT], JobDetailsError]: Success if the input_type is set.
         """
 
         if self.input_type is None:
-            return IOFailure(JobDetailsError("JobDetails has no input parameters"))
+            return JobDetailsError("JobDetails has no input parameters")
 
-        match await aread_input_parameters(self.paths, self.input_type):
-            case IOSuccess(Success(input_parameters)):
-                return IOSuccess(
-                    ParametrizedJobDetails(
-                        input_parameters=input_parameters,
-                        **self.model_dump(exclude={"input_type"}),
-                    )
-                )
-            case IOFailure(Failure(error)):
-                return IOFailure(error)
+        result = await aread_input_parameters(self.paths, self.input_type)
+
+        if isinstance(result, JobDetailsError):
+            return result
+
+        return ParametrizedJobDetails(
+            input_parameters=result,
+            **self.model_dump(exclude={"input_type"}),
+        )
 
     def read(  # type: ignore[return]
         self,
-    ) -> Result[ParametrizedJobDetails[InputParametersT], JobDetailsError]:
+    ) -> ParametrizedJobDetails[InputParametersT] | JobDetailsError:
         """Read the input parameters and get a ParametrizedJobDetails instance.
 
         Returns:
-            Result[ParametrizedJobDetails[InputParametersT], JobDetailsError]: Success if the input_type is set.
+            Union[ParametrizedJobDetails[InputParametersT], JobDetailsError]: Success if the input_type is set.
         """
 
         if self.input_type is None:
-            return Failure(JobDetailsError("JobDetails has no input parameters"))
+            return JobDetailsError("JobDetails has no input parameters")
 
-        match read_input_parameters(self.paths, self.input_type):
-            case Success(input_parameters):
-                return Success(
-                    ParametrizedJobDetails(
-                        input_parameters=input_parameters,
-                        **self.model_dump(exclude={"input_type"}),
-                    )
-                )
-            case Failure(error):
-                return Failure(error)
+        result = read_input_parameters(self.paths, self.input_type)
+
+        if isinstance(result, JobDetailsError):
+            return result
+
+        return ParametrizedJobDetails(
+            input_parameters=result,
+            **self.model_dump(exclude={"input_type"}),
+        )
 
 
 @final
