@@ -1,10 +1,9 @@
 from typing import Dict, Type, TypeAlias, TypeVar
 
 from pydantic import BaseModel, JsonValue
-from returns.io import IOFailure, IOSuccess
-from returns.result import Failure, Success
 
 from oceanprotocol_job_details.di import Container
+from oceanprotocol_job_details.exceptions import JobDetailsError
 from oceanprotocol_job_details.ocean import (
     EmptyJobDetails,
     JobDetails,
@@ -12,19 +11,17 @@ from oceanprotocol_job_details.ocean import (
 )
 from oceanprotocol_job_details.settings import JobSettings
 
-InputParametersT = TypeVar("InputParametersT", bound=BaseModel | None)
+InputParametersT = TypeVar("InputParametersT", bound=BaseModel)
 EmptyInputParameters: TypeAlias = BaseModel
 
 
-def create_container(
-    config: Dict[str, JsonValue],
-) -> Container[InputParametersT]:
+def create_container(config: Dict[str, JsonValue]) -> Container[InputParametersT]:
     """
     Return a fully configured Container from a config dict.
     """
 
     container = Container[InputParametersT]()
-    settings = JobSettings(**config)  # type: ignore[arg-type]
+    settings = JobSettings.model_validate(config)
     container.config.from_pydantic(settings)
     return container
 
@@ -41,7 +38,7 @@ def load_job_details(
     return container.job_details_loader(input_type=input_type).load()
 
 
-def load_parametrized_job_details(  # type: ignore[return]
+def load_parametrized_job_details(
     input_type: Type[InputParametersT],
     config: Dict[str, JsonValue] = {},
 ) -> ParametrizedJobDetails[InputParametersT]:
@@ -52,14 +49,15 @@ def load_parametrized_job_details(  # type: ignore[return]
     container: Container[InputParametersT] = create_container(config)
     job_details = container.job_details_loader(input_type=input_type).load()
 
-    match job_details.read():
-        case Success(parametrized_job_details):
-            return parametrized_job_details  # type: ignore[no-any-return]
-        case Failure(error):
-            raise error
+    result = job_details.read()
+
+    if isinstance(result, JobDetailsError):
+        raise result
+
+    return result
 
 
-async def aload_parametrized_job_details(  # type: ignore[return]
+async def aload_parametrized_job_details(
     input_type: Type[InputParametersT],
     config: Dict[str, JsonValue] = {},
 ) -> ParametrizedJobDetails[InputParametersT]:
@@ -70,11 +68,12 @@ async def aload_parametrized_job_details(  # type: ignore[return]
     container: Container[InputParametersT] = create_container(config)
     job_details = container.job_details_loader(input_type=input_type).load()
 
-    match await job_details.aread():
-        case IOSuccess(Success(parametrized_job_details)):
-            return parametrized_job_details  # type: ignore[no-any-return]
-        case IOFailure(Failure(error)):
-            raise error
+    result = await job_details.aread()
+
+    if isinstance(result, JobDetailsError):
+        raise result
+
+    return result
 
 
 def load_empty_job_details(

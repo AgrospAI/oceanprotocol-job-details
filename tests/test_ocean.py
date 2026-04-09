@@ -3,8 +3,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from pydantic import ValidationError
-from returns.io import IOFailure, IOSuccess
-from returns.result import Failure, Success
 
 from oceanprotocol_job_details.exceptions import JobDetailsError
 from oceanprotocol_job_details.ocean import (
@@ -20,9 +18,9 @@ class TestReadInputParameters:
         mock_paths = MagicMock()
         mock_paths.algorithm_custom_parameters.exists.return_value = False
 
-        match read_input_parameters(mock_paths, CustomParameters):
-            case Failure(error):
-                assert "missing" in str(error)
+        error = read_input_parameters(mock_paths, CustomParameters)
+        assert isinstance(error, JobDetailsError)
+        assert "missing" in str(error)
 
     @patch("pathlib.Path.exists", return_value=True)
     @patch("pathlib.Path.read_text", return_value="")
@@ -30,9 +28,9 @@ class TestReadInputParameters:
         mock_paths = MagicMock()
         mock_paths.algorithm_custom_parameters.read_text.return_value = ""
 
-        match read_input_parameters(mock_paths, CustomParameters):
-            case Failure(error):
-                assert "empty" in str(error)
+        error = read_input_parameters(mock_paths, CustomParameters)
+        assert isinstance(error, JobDetailsError)
+        assert "empty" in str(error)
 
     def test_invalid_json_returns_validation_error(self):
         mock_paths = MagicMock()
@@ -41,10 +39,9 @@ class TestReadInputParameters:
             '{"name": "test"}'
         )
 
-        match read_input_parameters(mock_paths, CustomParameters):
-            case Failure(error):
-                assert isinstance(error, JobDetailsError)
-                assert isinstance(error.__cause__, ValidationError)
+        error = read_input_parameters(mock_paths, CustomParameters)
+        assert isinstance(error, JobDetailsError)
+        assert isinstance(error.__cause__, ValidationError)
 
     def test_valid_input_returns_success(self):
         mock_paths = MagicMock()
@@ -53,10 +50,10 @@ class TestReadInputParameters:
             '{"example": "data", "isTrue": true}'
         )
 
-        match read_input_parameters(mock_paths, CustomParameters):
-            case Success(result):
-                assert result.example == "data"
-                assert result.isTrue
+        result = read_input_parameters(mock_paths, CustomParameters)
+        assert isinstance(result, CustomParameters)
+        assert result.example == "data"
+        assert result.isTrue
 
 
 class TestAReadInputParameters:
@@ -66,9 +63,9 @@ class TestAReadInputParameters:
         mock_paths = MagicMock()
         mock_paths.algorithm_custom_parameters.exists.return_value = False
 
-        match await aread_input_parameters(mock_paths, CustomParameters):
-            case IOFailure(Failure(error)):
-                assert "missing" in str(error)
+        error = await aread_input_parameters(mock_paths, CustomParameters)
+        assert isinstance(error, JobDetailsError)
+        assert "missing" in str(error)
 
     @pytest.mark.asyncio
     @patch("pathlib.Path.exists", return_value=True)
@@ -81,9 +78,9 @@ class TestAReadInputParameters:
 
         mock_paths = MagicMock()
 
-        match await aread_input_parameters(mock_paths, CustomParameters):
-            case IOFailure(Failure(error)):
-                assert "empty" in str(error)
+        error = await aread_input_parameters(mock_paths, CustomParameters)
+        assert isinstance(error, JobDetailsError)
+        assert "empty" in str(error)
 
     @pytest.mark.asyncio
     @patch("aiofiles.open")
@@ -95,10 +92,9 @@ class TestAReadInputParameters:
 
         mock_paths = MagicMock()
 
-        match await aread_input_parameters(mock_paths, CustomParameters):
-            case IOFailure(Failure(error)):
-                assert isinstance(error, JobDetailsError)
-                assert isinstance(error.__cause__, ValidationError)
+        error = await aread_input_parameters(mock_paths, CustomParameters)
+        assert isinstance(error, JobDetailsError)
+        assert isinstance(error.__cause__, ValidationError)
 
     @pytest.mark.asyncio
     @patch("aiofiles.open")
@@ -110,10 +106,10 @@ class TestAReadInputParameters:
 
         mock_paths = MagicMock()
 
-        match await aread_input_parameters(mock_paths, CustomParameters):
-            case IOSuccess(Success(result)):
-                assert result.example == "data"
-                assert result.isTrue
+        result = await aread_input_parameters(mock_paths, CustomParameters)
+        assert isinstance(result, CustomParameters)
+        assert result.example == "data"
+        assert result.isTrue
 
     def test_stringified_dict_custom_parameters_logic(job_details):
         """
@@ -127,7 +123,7 @@ class TestAReadInputParameters:
             {"example": "data", "isTrue": True}
         )
 
-        match read_input_parameters(mock_paths, CustomParameters):
-            case Success(result):
-                assert result.example == "data"
-                assert result.isTrue
+        result = read_input_parameters(mock_paths, CustomParameters)
+        assert isinstance(result, CustomParameters)
+        assert result.example == "data"
+        assert result.isTrue
