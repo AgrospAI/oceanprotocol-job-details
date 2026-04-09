@@ -3,7 +3,6 @@ from unittest.mock import patch
 import pytest
 from returns.io import IOFailure, IOSuccess
 from returns.result import Failure, Success
-from typing_extensions import assert_never
 
 from oceanprotocol_job_details import ParametrizedJobDetails
 from oceanprotocol_job_details.exceptions import JobDetailsError
@@ -26,8 +25,6 @@ class TestJobDetails:
             case Success(result):
                 assert isinstance(result, ParametrizedJobDetails)
                 assert result.input_parameters == mock_params
-            case _:
-                assert_never()
 
     @patch("oceanprotocol_job_details.ocean.read_input_parameters")
     def test_read_failure_propagation(self, mock_read_func, job_details):
@@ -40,8 +37,6 @@ class TestJobDetails:
         match job_details.read():
             case Failure(error):
                 assert error.__cause__ == cause
-            case _:
-                assert_never()
 
     def test_read_no_input_type(self, job_details):
         job_details = job_details.model_copy(update={"input_type": None})
@@ -49,8 +44,6 @@ class TestJobDetails:
         match job_details.read():
             case Failure(error):
                 assert "no input parameters" in str(error)
-            case _:
-                assert_never()
 
     @pytest.mark.asyncio
     @patch("oceanprotocol_job_details.ocean.aread_input_parameters")
@@ -61,8 +54,6 @@ class TestJobDetails:
         match await job_details.aread():
             case IOSuccess(Success(result)):
                 assert result.input_parameters == mock_params
-            case _:
-                assert_never()
 
     @pytest.mark.asyncio
     @patch("oceanprotocol_job_details.ocean.aread_input_parameters")
@@ -76,8 +67,6 @@ class TestJobDetails:
         match await job_details.aread():
             case IOFailure(Failure(error)):
                 assert error.__cause__ == cause
-            case _:
-                assert_never()
 
     @pytest.mark.asyncio
     async def test_aread_no_input_type(self, job_details):
@@ -86,8 +75,6 @@ class TestJobDetails:
         match await job_details.aread():
             case IOFailure(Failure(error)):
                 assert "no input parameters" in str(error)
-            case _:
-                assert_never()
 
 
 class TestJobDetailsLoaders:
