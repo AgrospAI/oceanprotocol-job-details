@@ -7,6 +7,7 @@ from .helpers import (
     load_parametrized_job_details,
 )
 from .ocean import EmptyJobDetails, JobDetails, ParametrizedJobDetails
+from .plugins import inject, register
 
 __all__ = [
     "JobDetails",
@@ -18,4 +19,6 @@ __all__ = [
     "aload_parametrized_job_details",
     "create_container",
     "run_in_executor",
+    "register",
+    "inject",
 ]
