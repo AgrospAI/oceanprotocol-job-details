@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Generator, Generic, Tuple, Type, TypeVar, final
+from typing import Generic, Iterator, Tuple, Type, TypeVar, final
 
 import aiofiles
 from pydantic import BaseModel, ConfigDict, Secret, ValidationError
 
 from oceanprotocol_job_details.domain import DDOMetadata, Files, Paths
 from oceanprotocol_job_details.exceptions import JobDetailsError
+from oceanprotocol_job_details.loaders.input_loader import InputLoader
 
 InputParametersT = TypeVar("InputParametersT", bound=BaseModel)
 
@@ -99,7 +100,7 @@ class _BaseJobDetails(BaseModel, Generic[InputParametersT]):  # type: ignore[exp
         from_attributes=True,
     )
 
-    def inputs(self) -> Generator[Tuple[str, Path], None, None]:
+    def inputs(self) -> Iterator[Tuple[str, Path]]:
         """
         Iterate through tuples containing the DID and the Path of each input file.
         The same DID may have multiple input files.
@@ -137,7 +138,7 @@ class JobDetails(_BaseJobDetails[InputParametersT]):  # type: ignore[explicit-an
             **self.model_dump(exclude={"input_type"}),
         )
 
-    def read(  # type: ignore[return]
+    def read(
         self,
     ) -> ParametrizedJobDetails[InputParametersT] | JobDetailsError:
         """Read the input parameters and get a ParametrizedJobDetails instance.

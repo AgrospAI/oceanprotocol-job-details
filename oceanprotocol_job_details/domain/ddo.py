@@ -1,4 +1,3 @@
-# mypy: disable-error-code=explicit-any
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field, JsonValue
