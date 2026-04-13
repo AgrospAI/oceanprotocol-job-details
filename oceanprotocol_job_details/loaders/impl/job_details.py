@@ -9,7 +9,7 @@ from oceanprotocol_job_details.loaders.loader import Loader
 from oceanprotocol_job_details.ocean import JobDetails
 from oceanprotocol_job_details.plugins import register
 
-InputParametersT = TypeVar("InputParametersT", bound=BaseModel | None)
+InputParametersT = TypeVar("InputParametersT", bound=BaseModel)
 
 
 @register("jobdetails")
