@@ -92,7 +92,7 @@ class DataToken(BaseModel):
 
 
 class Price(BaseModel):
-    value: int
+    value: float | int
 
 
 class Stats(BaseModel):
