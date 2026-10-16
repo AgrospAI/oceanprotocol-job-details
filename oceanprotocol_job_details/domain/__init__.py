@@ -1,4 +1,4 @@
-from oceanprotocol_job_details.domain.ddo import DDO
+from oceanprotocol_job_details.domain.ddo import DDO, Metadata
 from oceanprotocol_job_details.domain.derived import (
     DID,
     DDOMetadata,
@@ -7,4 +7,4 @@ from oceanprotocol_job_details.domain.derived import (
     Paths,
 )
 
-__all__ = ["DDO", "DID", "DDOMetadata", "Paths", "DIDPaths", "Files"]
+__all__ = ["DDO", "Metadata", "DID", "DDOMetadata", "Paths", "DIDPaths", "Files"]

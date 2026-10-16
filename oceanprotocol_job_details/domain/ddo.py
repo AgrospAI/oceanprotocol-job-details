@@ -107,17 +107,21 @@ class Purgatory(BaseModel):
 
 class DDO(BaseModel):
     id: str
-    context: list[str] = Field(alias="@context")
-    nftAddress: str
-    chainId: int
-    version: str
-    metadata: Metadata
-    services: list[Service]
-    credentials: Credentials
-    event: Event
-    nft: NFT
-    datatokens: list[DataToken]
-    stats: Stats
-    purgatory: Purgatory
+    context: list[str] = Field(
+        default_factory=lambda: ["https://w3id.org/did/v1"], alias="@context"
+    )
+    nftAddress: Optional[str] = Field(
+        default="0x0000000000000000000000000000000000000000"
+    )
+    chainId: Optional[int] = Field(default=0)
+    version: Optional[str] = Field(default="5.0.0")
+    metadata: Optional[Metadata] = Field(default=None)
+    services: list[Service] = Field(default_factory=list)
+    credentials: Optional[Credentials] = Field(default=None)
+    event: Optional[Event] = Field(default=None)
+    nft: Optional[NFT] = Field(default=None)
+    datatokens: list[DataToken] = Field(default_factory=list)
+    stats: Optional[Stats] = Field(default=None)
+    purgatory: Optional[Purgatory] = Field(default=None)
 
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(populate_by_name=True, extra="allow")

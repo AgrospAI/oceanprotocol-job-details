@@ -8,7 +8,6 @@ from pydantic import BaseModel, ConfigDict, Secret, ValidationError
 
 from oceanprotocol_job_details.domain import DDOMetadata, Files, Paths
 from oceanprotocol_job_details.exceptions import JobDetailsError
-from oceanprotocol_job_details.loaders.input_loader import InputLoader
 
 InputParametersT = TypeVar("InputParametersT", bound=BaseModel)
 
@@ -107,7 +106,7 @@ class _BaseJobDetails(BaseModel, Generic[InputParametersT]):  # type: ignore[exp
         """
 
         yield from (
-            (file.parent.name, file)
+            (files.did if file.parent.name == "inputs" else file.parent.name, file)
             for files in self.files
             for file in files.input_files
         )

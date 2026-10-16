@@ -37,7 +37,19 @@ class JobSettings(BaseSettings):
     @model_validator(mode="after")
     def validate_dids(self) -> Self:
         if len(self.dids) == 0:
-            self.dids.extend(
-                [f.name for f in (self.base_dir / "ddos").glob("*") if f.is_file()]
-            )
+            ddos_dir = self.base_dir / "ddos"
+            if ddos_dir.exists():
+                self.dids.extend(
+                    [f.name for f in ddos_dir.glob("*") if f.is_file()]
+                )
+            if len(self.dids) == 0:
+                inputs_dir = self.base_dir / "inputs"
+                if inputs_dir.exists():
+                    self.dids.extend(
+                        [
+                            f.name
+                            for f in sorted(inputs_dir.glob("*"))
+                            if f.name != "algoCustomData.json"
+                        ]
+                    )
         return self

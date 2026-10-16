@@ -38,11 +38,24 @@ class FilesLoader(Loader[Files]):
 
     @override
     def load(self) -> Files:
-        return [
-            DIDPaths(
-                did=did,
-                ddo=self.calculate_path(did, "ddo"),
-                input_files=list(self.calculate_path(did, "input").glob("*")),
+        res = []
+        for did in self.dids:
+            ddo_path = self.calculate_path(did, "ddo")
+            ddo = ddo_path if ddo_path.is_file() else None
+
+            input_path = self.calculate_path(did, "input")
+            if input_path.is_dir():
+                input_files = [f for f in input_path.glob("*") if f.is_file()]
+            elif input_path.is_file():
+                input_files = [input_path]
+            else:
+                input_files = []
+
+            res.append(
+                DIDPaths(
+                    did=did,
+                    ddo=ddo,
+                    input_files=input_files,
+                )
             )
-            for did in self.dids
-        ]
+        return res

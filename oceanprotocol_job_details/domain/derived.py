@@ -12,12 +12,12 @@ DID: TypeAlias = str
 @dataclass(config=ConfigDict(frozen=True, arbitrary_types_allowed=True, extra="forbid"))
 class DIDPaths:
     did: DID
-    ddo: Path
+    ddo: Path | None = None
 
     input_files: List[Path] = Field(default_factory=list)
 
     def __post_init__(self) -> None:
-        if not self.ddo.exists():
+        if self.ddo is not None and not self.ddo.exists():
             raise FileNotFoundError(f"DDO {self.ddo} does not exist")
 
     def __len__(self) -> int:
