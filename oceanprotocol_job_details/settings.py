@@ -14,7 +14,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class JobSettings(BaseSettings):
     base_dir: Path = Field(alias="BASE_DIR")
-    dids: list[str] = Field(default_factory=list, alias="DIDS")
+    # Ocean Node >= 4.6 sends one entry per input, index-aligned with the
+    # /data/inputs/<index> folders. Free-compute inputs have no DID, so the
+    # entry is null and is resolved by its index.
+    dids: list[str | None] = Field(default_factory=list, alias="DIDS")
     transformation_did: str = Field(alias="TRANSFORMATION_DID")
     secret: Secret[str] | None = Field(default=None, alias="SECRET")
     logger: Logger = Field(default_factory=lambda: getLogger(__name__))
@@ -27,7 +30,7 @@ class JobSettings(BaseSettings):
 
     @field_validator("dids", mode="before")
     @classmethod
-    def split_dids(cls, v: list[str] | str) -> list[str]:
+    def split_dids(cls, v: list[str | None] | str) -> list[str | None]:
         if isinstance(v, str):
             data = orjson.loads(v)
             assert isinstance(data, list)
@@ -39,9 +42,7 @@ class JobSettings(BaseSettings):
         if len(self.dids) == 0:
             ddos_dir = self.base_dir / "ddos"
             if ddos_dir.exists():
-                self.dids.extend(
-                    [f.name for f in ddos_dir.glob("*") if f.is_file()]
-                )
+                self.dids.extend([f.name for f in ddos_dir.glob("*") if f.is_file()])
             if len(self.dids) == 0:
                 inputs_dir = self.base_dir / "inputs"
                 if inputs_dir.exists():

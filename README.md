@@ -78,11 +78,19 @@ data        # Root /data directory
 │   ├── 17feb...e42 # DDO file
 │   └── ... # One DDO per loaded dataset
 ├── inputs  # Datasets dir
-│   ├── 17feb...e42 # Dir holding the data of its name DID, contains files named 0..X
-│   │   └── 0 # Data file
-│   └── algoCustomData.json # Custom algorithm input data
-├── logs    # Algorithm output logs dir
-└── outputs # Algorithm output files dir
+│   ├── 0   # Ocean Node >= 4.6: one folder per input, index-aligned with DIDS
+│   │   └── parcels.csv
+│   ├── 17feb...e42 # Older Ocean Node: folder named after the input DID
+│   │   └── 0 # Data file
+│   └── algoCustomData.json # Custom algorithm input data
+├── logs    # Algorithm output logs dir
+└── outputs # Algorithm output files dir
 ```
+
+> **_Note:_** Ocean Node >= 4.6 isolates each input in `/data/inputs/<index>/` and
+> sends the `DIDS` environment variable index-aligned with those folders (`null`
+> for free-compute inputs without a DID). Older nodes used
+> `/data/inputs/<did>/`. Both layouts are supported: the input folder is resolved
+> by index first and by DID as a fallback.
 
 > **_Note:_** Even though it's possible that the algorithm is passed multiple datasets, right now the implementation only allows to use **one dataset** per algorithm execution, so **normally** the executing job will only have **one ddo**, **one dir** inside inputs, and **one data file** named `0`.
